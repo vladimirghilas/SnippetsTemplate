@@ -5,19 +5,52 @@
                 <img src="/static/images/logo.png" width="32" height="32" alt="">
                 PythonBin
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                    aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav ms-auto mb-2 mb-md-0">
-                    <li class="nav-item me-2">
-                        <a class="btn btn-outline-secondary" href="">
-                            Добавить сниппет
+                    {% if request.user.is_authenticated %}
+                        <li class="nav-item me-2">
+                            <a class="btn btn-outline-secondary" href=" {% url "snippet-add" %} ">
+                                Добавить сниппет
+                            </a>
+                        </li>
+                        <li class="nav-item me-2">
+                            <a class="btn btn-outline-primary" href="{% url 'snippets-my' %}">
+                                Мои сниппеты
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="btn btn-outline-info" href=" {% url "snippets-list" %} ">
+                            Посмотреть сниппеты
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="btn btn-outline-info" href="">
-                            Посмотреть сниппеты
+                    <li>
+                        {% if request.user.is_authenticated %}
+                            <div style="color: white"> Welcome, {{ request.user.username }}</div>
+                            <a href="{% url 'logout' %}">Logout</a>
+                        {% else %}
+                            <form action="{% url 'login' %}" method="post">
+                                {% csrf_token %}
+                                <input type="text" name="username" value="{{ username }}" placeholder="username">
+                                <input type="password" name="password" placeholder="password">
+                                {% if errors %}
+                                    <ul style="color: red">
+                                        {% for error in errors %}
+                                            <li> {{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                                <input type="submit" value="login">
+                            </form>
+                        {% endif %}
+                    </li>
+                    <li>
+                        <a class="btn btn-success" href=" {% url "registration" %} ">
+                            Registration
                         </a>
                     </li>
                 </ul>
