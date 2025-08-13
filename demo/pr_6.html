@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<ul id="itemList">
+    <li>Задача 1 <button class="delete-btn">Удалить</button></li>
+    <li>Задача 2 <button class="delete-btn">Удалить</button></li>
+    <li>Задача 3 <button class="delete-btn">Удалить</button></li>
+</ul>
+<script>
+    const buttons = document.querySelectorAll('.delete-btn');
+    for  (let button of buttons) {
+        button.addEventListener('click', (event) => {
+            event.target.parentElement.remove();
+        });
+    }
+</script>
+</body>
+</html>

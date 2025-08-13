@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Проверка формы<</title>
+</head>
+<body>
+<form id="myForm">
+    <input type="text" id="nameInput" placeholder="Введите имя">
+    <button type="submit">Отправить</button>
+</form>
+<p id="message"></p>
+<script>
+    const form = document.getElementById("myForm");
+    const input = document.getElementById("nameInput");
+    const message = document.getElementById("message");
+
+    form.addEventListener('submit', (event) =>{
+        event.preventDefault();
+
+        const name = input.value.trim();
+
+        if (name === '') {
+            message.textContent = "Поле не может быть пустым!";
+            message.style.color = 'red';
+        } else {
+            message.textContent = "Данные успешно отправлены!";
+            message.style.color = "green"
+        }
+    });
+
+</script>
+</body>
+</html>

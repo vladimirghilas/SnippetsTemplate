@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой To-Do List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+
+        .todo-container {
+            width: 400px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        #task-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #add-button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #add-button:hover {
+            background-color: #0056b3;
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="todo-container">
+    <h1>Список дел</h1>
+
+    <div class="input-group">
+        <input type="text" id="task-input" placeholder="Введите новую задачу">
+        <button id="add-button">Добавить</button>
+    </div>
+
+    <ul id="task-list" class="task-list">
+    </ul>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Получаем ссылки на DOM-элементы
+        const taskInput = document.getElementById('task-input');
+        const addButton = document.getElementById('add-button');
+        const taskList = document.getElementById('task-list');
+
+        // 2. Функция для добавления новой задачи
+        function addTask() {
+            const taskText = taskInput.value.trim();
+
+            if (taskText === '') {
+                alert('Пожалуйста, введите задачу!');
+                return;
+            }
+
+            // Создаем элементы новой задачи
+            const listItem = document.createElement('li');
+            listItem.className = 'task-item';
+
+            const taskSpan = document.createElement('span');
+            taskSpan.textContent = taskText;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Удалить';
+            deleteButton.className = 'delete-button';
+
+            // Добавляем обработчик события для кнопки удаления
+            deleteButton.addEventListener('click', () => {
+                listItem.remove();
+            });
+
+            // Собираем все элементы в listItem
+            listItem.appendChild(taskSpan);
+            listItem.appendChild(deleteButton);
+
+            // Добавляем новый элемент в список
+            taskList.appendChild(listItem);
+
+            // Очищаем поле ввода
+            taskInput.value = '';
+        }
+
+        // 3. Обработчики событий
+        // Добавление задачи по клику на кнопку
+        addButton.addEventListener('click', addTask);
+
+        // Добавление задачи по нажатию Enter в поле ввода
+        taskInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                addTask();
+            }
+        });
+    });
+</script>
+</body>
+</html>

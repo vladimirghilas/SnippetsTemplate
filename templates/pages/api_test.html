@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}API Тест{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Тестирование API</h1>
+
+    <div id="api-container">
+        <!-- Кнопка и результаты будут добавлены JavaScript -->
+    </div>
+
+    <div class="mt-4">
+        <h3>POST запрос</h3>
+        <form id="post-form">
+            <div class="form-group">
+                <label for="message">Сообщение:</label>
+                <input type="text" id="message" class="form-control" placeholder="Введите сообщение">
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Отправить POST</button>
+        </form>
+        <div id="post-result"></div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Подключаем JavaScript -->
+{% block scripts %}
+<script src="{% static 'js/api_example.js' %}"></script>
+
+<script>
+// Обработчик для POST формы
+document.getElementById('post-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const message = document.getElementById('message').value;
+
+    // Используем промисы вместо async/await
+    sendPostRequest({message: message})
+        .then(function(result) {
+            const resultDiv = document.getElementById('post-result');
+            if (result && result.success) {
+                resultDiv.innerHTML = '<div class="alert alert-success">' + result.message + '</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger">Ошибка: ' + result.error + '</div>';
+            }
+        })
+        .catch(function(error) {
+            const resultDiv = document.getElementById('post-result');
+            resultDiv.innerHTML = '<div class="alert alert-danger">Ошибка: ' + error.message + '</div>';
+        });
+});
+</script>
+{% endblock %}

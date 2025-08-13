@@ -1,0 +1,202 @@
+[
+{
+  "model": "MainApp.snippet",
+  "pk": 1,
+  "fields": {
+    "name": "iten1",
+    "lang": "python",
+    "code": "python",
+    "creation_date": "2025-06-30T21:56:06.258Z",
+    "updated_at": "2025-07-01T09:32:39.795Z",
+    "views_count": 17,
+    "description": null,
+    "public": true,
+    "user": null
+  }
+},
+{
+  "model": "MainApp.snippet",
+  "pk": 2,
+  "fields": {
+    "name": "Test name",
+    "lang": "cpp",
+    "code": "for",
+    "creation_date": "2025-06-30T22:05:17.259Z",
+    "updated_at": "2025-07-01T09:32:39.795Z",
+    "views_count": 1,
+    "description": null,
+    "public": true,
+    "user": null
+  }
+},
+{
+  "model": "MainApp.snippet",
+  "pk": 3,
+  "fields": {
+    "name": "Adimin's snippet-1",
+    "lang": "java",
+    "code": "java code",
+    "creation_date": "2025-07-05T18:42:03.375Z",
+    "updated_at": "2025-07-05T18:42:03.403Z",
+    "views_count": 10,
+    "description": null,
+    "public": true,
+    "user": 1
+  }
+},
+{
+  "model": "MainApp.snippet",
+  "pk": 4,
+  "fields": {
+    "name": "Privatesnippet",
+    "lang": "cpp",
+    "code": "c++ code",
+    "creation_date": "2025-07-05T21:16:06.825Z",
+    "updated_at": "2025-07-05T21:16:06.825Z",
+    "views_count": 2,
+    "description": null,
+    "public": true,
+    "user": 1
+  }
+},
+{
+  "model": "MainApp.snippet",
+  "pk": 5,
+  "fields": {
+    "name": "Privare",
+    "lang": "python",
+    "code": "python code",
+    "creation_date": "2025-07-05T21:17:05.633Z",
+    "updated_at": "2025-07-05T21:17:05.633Z",
+    "views_count": 1,
+    "description": null,
+    "public": false,
+    "user": 1
+  }
+},
+{
+  "model": "MainApp.snippet",
+  "pk": 6,
+  "fields": {
+    "name": "hello",
+    "lang": "cpp",
+    "code": "first",
+    "creation_date": "2025-07-06T18:32:31.785Z",
+    "updated_at": "2025-07-06T18:32:31.785Z",
+    "views_count": 1,
+    "description": null,
+    "public": true,
+    "user": 1
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 1,
+  "fields": {
+    "text": "second",
+    "creation_date": "2025-07-06T13:27:04.694Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 2,
+  "fields": {
+    "text": "second",
+    "creation_date": "2025-07-06T13:28:17.269Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 3,
+  "fields": {
+    "text": "second",
+    "creation_date": "2025-07-06T13:28:25.493Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 4,
+  "fields": {
+    "text": "second",
+    "creation_date": "2025-07-06T13:38:46.788Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 5,
+  "fields": {
+    "text": "second",
+    "creation_date": "2025-07-06T13:42:34.728Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 6,
+  "fields": {
+    "text": "second",
+    "creation_date": "2025-07-06T13:49:51.973Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 7,
+  "fields": {
+    "text": "qwe",
+    "creation_date": "2025-07-06T13:50:31.891Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 8,
+  "fields": {
+    "text": "qwe",
+    "creation_date": "2025-07-06T13:52:26.239Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 9,
+  "fields": {
+    "text": "qwe",
+    "creation_date": "2025-07-06T13:54:52.540Z",
+    "author": 1,
+    "snippet": 3
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 10,
+  "fields": {
+    "text": "123",
+    "creation_date": "2025-07-06T13:55:33.835Z",
+    "author": 1,
+    "snippet": 1
+  }
+},
+{
+  "model": "MainApp.comment",
+  "pk": 11,
+  "fields": {
+    "text": "second",
+    "creation_date": "2025-07-06T13:59:20.212Z",
+    "author": 1,
+    "snippet": 1
+  }
+}
+]

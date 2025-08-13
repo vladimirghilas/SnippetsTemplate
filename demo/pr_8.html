@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Подсветка блоков</title>
+    <style>
+        .box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: lightgray;
+            display: inline-block;
+        }
+
+        .highlight {
+            background-color: yellow;
+            border: 2px solid orange;
+        }
+    </style>
+</head>
+<body>
+<div class="box"></div>
+<div class="box"></div>
+<div class="box"></div>
+<button id="highlightButton">Подсветить блоки</button>
+<script>
+    const boxes = document.getElementsByClassName('box')
+    const button = document.getElementById('highlightButton')
+
+    button.addEventListener('click', () => {
+        for (let box of boxes) {
+        box.classList.add('highlight')
+        }
+    })
+
+</script>
+</body>
+</html>

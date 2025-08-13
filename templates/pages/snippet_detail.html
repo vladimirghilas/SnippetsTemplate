@@ -1,68 +1,155 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/copy_button.css' %}">
+{% endblock %}
 
 {% block content %}
     <div class="container">
         <div class="row">
             <div class="col">
+                <!-- Acestea sunt doar afișări, deci rămân în fieldset -->
                 <fieldset disabled>
-                    <div class="row disabled">
-                        <div class="col col-4">
+                    <div class="row mb-4">
+                        <div class="col col-3">
                             Название: <input type="text" value="{{ snippet.name }}" class="form-control">
                         </div>
-                        <div class="col col-4">
-                            Дата создания:<input type="text" value="{{ snippet.creation_date }}" class="form-control">
+                        <div class="col col-3">
+                            Дата создания: <input type="text" value="{{ snippet.creation_date }}" class="form-control">
                         </div>
                         <div class="col col-3">
-                            Обновлено:<input type="text" value="{{ snippet.updated_at }}" class="form-control">
+                            Обновлено: <input type="text" value="{{ snippet.updated_at }}" class="form-control">
                         </div>
                         <div class="col-3">
                             Просмотры: <input type="text" value="{{ snippet.views_count }}" class="form-control">
                         </div>
                     </div>
                     <hr>
-                    <div class="row">
-                        <div class="col">
-                            <div class="p-2 h-100" style="border:1px solid #ced4da; border-radius:5px;">
-                                <p>
-                                    {{ snippet.code }}
-                                </p>
+                    <div class="row mb-4">
+                        <div class="col-8">
+                            <div class="p-2 h-100 position-relative"
+                                 style="border:1px solid #ced4da; border-radius:5px;background-color:  #e9ecef;">
+                                <a onclick="copyToBuffer(`{{ snippet.code }}`)" class="copy-button" href="#">copy</a>
+                                <pre><code class="language-{{ snippet.lang }}">{{ snippet.code }}</code></pre>
                             </div>
+                        </div>
+
+                        <!-- Aici afișăm doar tagurile, dar fără form -->
+                        <div class="col-md-3">
+                            <h5>Теги:</h5>
+                            {% for tag in snippet.tags.all %}
+                                <a href="{% url 'snippets-by-tag' tag.id %}"
+                                   class="badge bg-primary me-2 mb-1">{{ tag.name }}</a>
+                                {% empty %}
+                                <span class="text-muted">Без тегов</span>
+                            {% endfor %}
                         </div>
                     </div>
                 </fieldset>
+
+                <!-- Formularul activ pentru adăugare tag -->
             </div>
         </div>
+
         <div class="row">
-            <div class="col">
-                <form action="{% url 'comment_add' %}" method="POST">
-                    {% csrf_token %} {{ comment_form }}
+            <div class="col-md-8">
+                <form action="{% url 'comment-add' %}" method="POST"
+                      class="p-1 border rounded shadow-sm"
+                      style="max-width: 1000px; background-color:#e9ecef;">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ comment_form.text.label_tag }}
+                        {{ comment_form.text }}
+                        <small id="charCount" class="form-text text-muted">0/500</small>
+                    </div>
                     <input type="hidden" name="snippet_id" value="{{ snippet.id }}">
-                    <button type="submit">Добавить</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Добавить</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <form method="POST" action="{% url 'add-tag-to-snippet' snippet.id %}" class="mt-3">
+                    {% csrf_token %}
+                    <div class="mb-2">
+                        <select name="tag_id" class="form-select" required>
+                            <option value="" disabled selected>Выберите тег</option>
+                            {% for tag in available_tags %}
+                                <option value="{{ tag.id }}">{{ tag.name }}</option>
+                                {% empty %}
+                                <option disabled>Теги отсутствуют</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Add tag</button>
                 </form>
             </div>
         </div>
-               <div class="row">
-            <div class="col">
-                <table border="1">
-                    <tr>
-                        <th>Автор</th>
-                        <th>Комментарий</th>
-                        <th>Дата</th>
-                    </tr>
-                    {% for comment in comments %}
-                        <tr>
-                            <td>{{ comment.author.username }}</td>
-                            <td>{{ comment.text }}</td>
-                            <td>{{ comment.creation_date|date:"Y-m-d H:i" }}</td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="3">Пока нет комментариев. Будьте первым!</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Автор</th>
+                <th>Комментарий</th>
+                <th>Дата</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for comment in comments %}
+                <tr>
+                    <td>{{ comment.author.username }}</td>
+                    <td>{{ comment.text }}</td>
+                    <td>{{ comment.creation_date | date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center fst-italic">Пока нет комментариев. Будьте первым!</td>
+                </tr>
+            {% endfor %}
+
+            {% if comments.has_other_pages %}
+                <tr>
+                    <td colspan="3" class="text-center">
+                        <nav aria-label="Навигация по страницам">
+                            <ul class="pagination justify-content-center">
+                                {% if comments.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ comments.previous_page_number }}"
+                                           aria-label="Предыдущая">
+                                            &laquo; Предыдущая
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo; Предыдущая</span>
+                                    </li>
+                                {% endif %}
+
+                                <li class="page-item disabled">
+                                    <span class="page-link">Страница {{ comments.number }} из {{ comments.paginator.num_pages }}</span>
+                                </li>
+
+                                {% if comments.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ comments.next_page_number }}"
+                                           aria-label="Следующая">Следующая &raquo;</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Следующая &raquo;</span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
     </div>
 
+{% endblock %}
+{% block scripts %}
+    {{block.super}}
+    <script src="{% static 'js/comment_count.js' %}"></script>
+	<script src="{% static 'js/utils_copy.js' %}"></script>
+    <script src="{% static 'js/prism.js' %}"></script>
 {% endblock %}

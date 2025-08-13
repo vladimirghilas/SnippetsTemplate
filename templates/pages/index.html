@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
     <!-- Begin page content -->
     <div class="container">
@@ -20,7 +21,7 @@
 
         <div class="row mt-3">
             <div class="col-4 offset-4">
-                <a href="" class="btn btn-secondary btn-block">Добавить сниппет</a>
+                <a href="{% url "snippet-add" %}" class="btn btn-secondary btn-block">Добавить сниппет</a>
             </div>
         </div>
 
@@ -43,4 +44,8 @@
             </div>
         </div>
     </div>
+{% endblock %}
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static 'js/test_js.js' %}"></script>
 {% endblock %}

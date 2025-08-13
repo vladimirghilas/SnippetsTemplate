@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
+from multiprocessing.connection import MESSAGE_LENGTH
 from pathlib import Path
+
+from django.contrib.messages.context_processors import messages
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
@@ -26,6 +30,51 @@ SECRET_KEY = '#%3rmpy6hb52y7j^tu7g*v$762rc0&f+26yy3x!j&+@s4(ndq@'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'django_debug.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'MainApp': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
 
 # Application definition
@@ -52,6 +101,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'Snippets.urls'
+MESSAGE_LEVEL = messages.DEBUG
 
 TEMPLATES = [
     {
@@ -125,3 +175,8 @@ STATICFILES_DIRS = [
   BASE_DIR / "static"
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Django Extensions Shell Plus Configuration
+SHELL_PLUS_PRE_IMPORTS = [
+    ('MainApp.factories', ('UserFactory', 'TagFactory', 'SnippetFactory', 'CommentFactory')),
+]

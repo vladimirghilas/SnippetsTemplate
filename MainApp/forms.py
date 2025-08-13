@@ -1,13 +1,14 @@
 from django import forms
 from django.forms.models import ModelForm
 
-from .models import LANG_CHOICES,Snippet, Comment
+from .models import LANG_CHOICES, Snippet, Comment
 from django.contrib.auth.models import User
+
 
 class SnippetForm(forms.ModelForm):
     class Meta:
-        model=Snippet
-        fields = ['name', 'lang', 'code', 'public']
+        model = Snippet
+        fields = ['name', 'lang', 'code', 'public', 'tags']
         widgets = {
             'name': forms.TextInput(attrs={
                 "class": "form-control",
@@ -19,29 +20,33 @@ class SnippetForm(forms.ModelForm):
             ),
             'code': forms.Textarea(attrs={
                 "class": "form-control",
-                "placeholder": "Введите ваш код здесь"
+                "placeholder": "Введите ваш код здесь",
             }),
         }
 
     def clean_name(self):
         name = self.cleaned_data["name"]
-        if len(name) < 5:
+        if len(name) < 3:
             raise forms.ValidationError('Name too short')
+        if len(name) > 30:
+            raise forms.ValidationError('Name too long')
         return name
+
 
 class UserRegistrationForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'email',]
+        fields = ['username', 'email', ]
         widgets = {
-            'username': forms.TextInput(attrs={'class':'form-control', 'placeholder':'username'}),
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'username'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email'})
         }
+
     password1 = forms.CharField(widget=forms.PasswordInput(
-        attrs={'class':'form-control','placeholder':'password'}
+        attrs={'class': 'form-control', 'placeholder': 'password'}
     ))
     password2 = forms.CharField(widget=forms.PasswordInput(
-        attrs={'class':'form-control','placeholder':'confirm password'}
+        attrs={'class': 'form-control', 'placeholder': 'confirm password'}
     ))
 
     def clean_password2(self):
@@ -51,7 +56,6 @@ class UserRegistrationForm(forms.ModelForm):
             return password2
         raise forms.ValidationError("Incorrect validation password")
 
-
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password1'])
@@ -59,7 +63,20 @@ class UserRegistrationForm(forms.ModelForm):
             user.save()
         return user
 
+
 class CommentForm(ModelForm):
-   class Meta:
-      model = Comment
-      fields = ['text']
+    class Meta:
+        model = Comment
+        fields = ['text']
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'id': 'commentInput',
+                'class': 'form-control custom-comment',
+                'rows': 6,
+                'cols': 30,
+                'placeholder': 'Добавь сюда комментарий',
+            }),
+        }
+        labels = {
+            'text': 'Комментарий',
+        }

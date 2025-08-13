@@ -1,5 +1,11 @@
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import UniqueConstraint
+from django.db.models.functions import Lower
+from django.db.models import ManyToManyField
+from django.db.models.fields import CharField
 
 LANG_CHOICES = [
     ("python", "Python"),
@@ -14,6 +20,35 @@ LANG_ICONS = {
     "javascript": "fa-js",
     "java": "fa-java",
 }
+class LikeDislike(models.Model):
+    LIKE = 1
+    DISLIKE = -1
+    VOTES = (
+        (LIKE, 'Like'),
+        (DISLIKE, 'Dislike'),
+    )
+
+    vote = models.SmallIntegerField(choices=VOTES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='likes')
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+    class Meta:
+        unique_together = ['user', 'content_type', 'object_id']
+
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+
+    class Meta:
+        constraints = [UniqueConstraint(Lower('name'), name='unique_lower_tag_name')]
+
+    def __str__(self):
+        return f"Tag: {self.name}"
+
 class Snippet(models.Model):
     class Meta:
         ordering = ['name', 'lang']
@@ -22,11 +57,15 @@ class Snippet(models.Model):
     lang = models.CharField(max_length=30,choices=LANG_CHOICES)
     code = models.TextField(max_length=5000)
     creation_date = models.DateTimeField(auto_now_add=True)
-    updated_at =models.DateTimeField(auto_now=True)
+    updated_at =models.DateTimeField(auto_now=True, null=True)
     views_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
     public = models.BooleanField(default=True)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, blank=True, null=True)
+    tags = models.ManyToManyField(to=Tag, blank=True)
+
+    def __repr__(self):
+        return f"S: {self.name}|{self.lang} views:{self.views_count} public:{self.public} user:{self.user}"
 
 class Comment(models.Model):
     text = models.TextField(verbose_name="Текст комментария")
@@ -35,6 +74,29 @@ class Comment(models.Model):
             on_delete=models.SET_NULL, null=True, related_name='comments',verbose_name="Автор")
     snippet = models.ForeignKey(Snippet,
             on_delete=models.CASCADE, related_name='comments',verbose_name="Сниппет")
+    likes = GenericRelation(LikeDislike)
+
+    def __repr__(self):
+        return f"C: {self.text[:10]} author:{self.author} sn: {self.snippet.name}"
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('comment', 'Новый комментарий'),
+        ('like', 'Новый лайк'),
+        ('follow', 'Новый подписчик'),
+    ]
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=255)
+    comment = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Комментарий от {self.author.username} к «{self.snippet.name}»"
+        return f"Уведомление для {self.recipient.username}: {self.title}"

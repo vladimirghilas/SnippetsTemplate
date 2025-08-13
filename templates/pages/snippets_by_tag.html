@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h2>{{ pagename }}</h2>
+    <hr>
+    {% if snippets %}
+        <ul class="list-group">
+            {% for snippet in snippets %}
+                <li class="list-group-item">
+                    <a href="{% url 'snippet-detail' snippet.id %}">
+                        {{ snippet.name }}
+                    </a>
+                    <small class="text-muted">({{ snippet.lang }})</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Нет сниппетов с этим тегом.</p>
+    {% endif %}
+</div>
+{% endblock %}

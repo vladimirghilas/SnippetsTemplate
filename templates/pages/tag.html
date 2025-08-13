@@ -1,0 +1,182 @@
+<html lang="ru" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>PythonBin</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <style>
+        main > .container {
+            padding: 60px 15px 0;
+        }
+
+        .footer {
+            background-color: #f5f5f5;
+        }
+
+        .footer > .container {
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+    </style>
+    <link rel="stylesheet" href="/static/css/prism.css">
+
+    <link type="text/css" rel="stylesheet" id="dark-mode-custom-link">
+    <link type="text/css" rel="stylesheet" id="dark-mode-general-link">
+    <style lang="en" type="text/css" id="dark-mode-custom-style"></style>
+    <style lang="en" type="text/css" id="dark-mode-native-style"></style>
+    <style lang="en" type="text/css" id="dark-mode-native-sheet"></style>
+    <style type="text/css">@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');</style>
+</head>
+
+<body class="d-flex flex-column h-100">
+
+<header>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/static/images/logo.png" width="32" height="32" alt="">
+                PythonBin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                    aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+                    <li class="nav-item me-2">
+                        <a class="btn btn-outline-secondary" href="/snippets/add">
+                            Добавить сниппет
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-info" href="/snippets/list">
+                            Посмотреть сниппеты
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-info" href="/snippets/my">
+                            Мои сниппеты
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<main role="main" class="mt-3 flex-shrink-0">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <fieldset disabled="">
+                    <div class="row disabled">
+                        <div class="col col-6">
+                            Название: <input type="text" value="Python: Internal Data Processing" class="form-control">
+                        </div>
+                        <div class="col col-4">
+                            Дата создания:<input type="text" value="June 30, 2025, 11 a.m." class="form-control">
+                        </div>
+                        <div class="col col-2">
+                            Просмотры: <input type="text" value="13" class="form-control">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="p-2 h-100" style="border:1px solid #ced4da; border-radius:5px;">
+                                <pre class="language-python" tabindex="0"><code class="language-python">data <span
+                                        class="token operator">=</span> <span class="token punctuation">[</span><span
+                                        class="token number">1</span><span class="token punctuation">,</span> <span
+                                        class="token number">2</span><span class="token punctuation">,</span> <span
+                                        class="token number">3</span><span class="token punctuation">,</span> <span
+                                        class="token number">4</span><span class="token punctuation">,</span> <span
+                                        class="token number">5</span><span class="token punctuation">]</span>
+processed_data <span class="token operator">=</span> <span class="token punctuation">[</span>x <span
+                                            class="token operator">*</span> <span class="token number">2</span> <span
+                                            class="token keyword">for</span> x <span class="token keyword">in</span> data<span
+                                            class="token punctuation">]</span></code></pre>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <h5>Теги:</h5>
+                            <span class="badge bg-primary me-2 mb-1">Python</span>
+                            <span class="badge bg-success me-2 mb-1">List Comprehension</span>
+                            <span class="badge bg-warning text-dark me-2 mb-1">Tutorial</span>
+                            <span class="badge bg-danger me-2 mb-1">Algorithms</span>
+                            <span class="badge bg-dark me-2 mb-1">Efficiency</span>
+                            <span class="badge bg-primary me-2 mb-1">Pythonic</span>
+                            <span class="badge bg-secondary me-2 mb-1">Beginner</span>
+                            <span class="badge bg-success me-2 mb-1">Advanced</span>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Оставить комментарий</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="/comment/add" method="POST">
+                            <div class="mb-3">
+                                <input type="hidden" name="csrfmiddlewaretoken"
+                                       value="Ls08vUccNFc45aLjPlHd0gh2THIdU8kGgTqJeMofNo8OonxIwuRsJoTgo1nwHRtx">
+                                <textarea name="text" cols="30" rows="5" class="form-control"
+                                          placeholder="Введите ваш комментарий здесь..." required=""
+                                          id="id_text"></textarea>
+                                <input type="hidden" name="snippet_id" value="13">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Отправить комментарий</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-8">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Всего комментариев: <span class="badge bg-secondary">0</span>
+                    </h5>
+                    <button class="btn btn-outline-secondary btn-sm">
+                        <i class="fa-solid fa-arrow-up-short-wide"></i>
+                        Сортировка
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-8">
+                <ul class="list-group mb-3">
+                    <li class="list-group-item d-flex align-items-start">
+                        Пока нет комментариев. Будьте первым!
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="/static/js/prism.js"></script>
+</main>
+
+<footer class="footer mt-auto py-3">
+    <div class="container">
+    <span class="text-muted">© Юрченко Евгений, 2025. <br>
+        Шаблон заготовка для урока</span>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        crossorigin="anonymous"></script>
+
+<tldx-lmi-shadow-root data-wxt-shadow-root=""></tldx-lmi-shadow-root>
+<div id="tldx-toast-container"></div>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<ul>
+    <li>Пункт 1</li>
+    <li>Пункт 2</li>
+</ul>
+<button>Добавить новый пункт</button>
+
+<script>
+    const button = document.querySelector('button')
+    const list = document.querySelector('ul')
+
+    button.addEventListener('click', () => {
+        const newItem = document.createElement('li');
+        newItem.textContent = "новый пункт";
+        list.appendChild(newItem);
+    });
+</script>
+</body>
+</html>

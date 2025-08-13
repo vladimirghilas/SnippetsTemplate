@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .orange {
+            width: 150px;
+            height: 150px;
+            background-color: orange;
+        }
+        .green {
+            width: 150px;
+            height: 150px;
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <div id="colorBox" class="block orange"></div>
+    <script>
+        const colorBox = document.getElementById('colorBox')
+
+        colorBox.addEventListener('mouseover', () => {
+            colorBox.classList.remove('orange');
+            colorBox.classList.add('green');
+        });
+        colorBox.addEventListener('mouseout', () => {
+            colorBox.classList.add('orange');
+            colorBox.classList.remove('green');
+        });
+    </script>
+
+</body>
+</html>

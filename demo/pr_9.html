@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <button>Создать ссылку</button>
+    <div id="linkContainer"></div>
+    <script>
+        const button = document.querySelector('button')
+        const container = document.getElementById('linkContainer')
+
+        button.addEventListener("click", () => {
+            const link = document.createElement('a');
+            link.setAttribute('href', "https://developer.mozilla.org/ru/");
+            link.setAttribute('target', "_blank");
+            link.textContent =  "Перейти на MDN"
+            container.appendChild(link)
+        })
+    </script>
+</body>
+</html>

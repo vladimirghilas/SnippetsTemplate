@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <button id="changeTextButton">Нажми меня</button>
+    <p id="myText">Оригинальный текст.</p>
+<script>
+   const button = document.getElementById('changeTextButton')
+   const text = document.getElementById('myText')
+
+   button.addEventListener('click',function () {
+       text.textContent = 'Текст был изменён!';
+   });
+</script>
+</body>
+</html>

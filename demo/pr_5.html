@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <input type="text" name="name" placeholder="Введите ваше имя">
+    <button id="submitButton">Отправить</button>
+    <p id="greetingMessage"></p>
+    <script>
+        const input = document.querySelector('input[name="name"]');
+        const button = document.getElementById('submitButton');
+        const message = document.getElementById('greetingMessage');
+
+        button.addEventListener('click', function() {
+            const name = input.value.trim();
+
+            if (name){
+                message.textContent = `Привет, ${name};`
+            }else{
+                message.textContent = `Пожалуйста, введите имя.`;
+            }
+        });
+    </script>
+</body>
+</html>

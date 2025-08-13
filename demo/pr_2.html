@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Скрыть/Показать</title>
+    <style>
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button id="toggleButton">Скрыть/Показать</button>
+    <div id="box" style="width: 120px; height: 50px; background-color: lightblue;">Отображаемый текст</div>
+    <script>
+        const button = document.getElementById('toggleButton');
+        const box = document.getElementById('box');
+
+        button.addEventListener('click', function() {
+            box.classList.toggle('hidden');
+            if (button.textContent === 'Показать'){
+                button.textContent = 'Скрыть'}else{
+                button.textContent = 'Показать'}
+
+        });
+    </script>
+</body>
+</html>

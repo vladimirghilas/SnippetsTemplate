@@ -1,0 +1,242 @@
+[
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Python: List Comprehension Example",
+      "lang": "python",
+      "code": "numbers = [1, 2, 3, 4, 5]\nsquared_numbers = [x**2 for x in numbers]\nprint(squared_numbers)",
+      "creation_date": "2025-06-26T19:21:54.653Z",
+      "views_count": 30,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "JavaScript: Sum Array Elements",
+      "lang": "javascript",
+      "code": "const arr = [1, 2, 3, 4, 5];\nconst sum = arr.reduce((a, b) => a + b, 0);\nconsole.log(sum);",
+      "creation_date": "2025-06-27T10:30:00.000Z",
+      "views_count": 25,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "C++: Basic Loop",
+      "lang": "cpp",
+      "code": "#include <iostream>\n\nint main() {\n    for (int i = 0; i < 5; ++i) {\n        std::cout << i << \" \";\n    }\n    return 0;\n}",
+      "creation_date": "2025-06-28T14:15:00.000Z",
+      "views_count": 15,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Java: Simple If-Else",
+      "lang": "java",
+      "code": "public class MyClass {\n    public static void main(String[] args) {\n        int x = 10;\n        if (x > 5) {\n            System.out.println(\"x is greater than 5\");\n        } else {\n            System.out.println(\"x is not greater than 5\");\n        }\n    }\n}",
+      "creation_date": "2025-06-29T09:00:00.000Z",
+      "views_count": 30,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Python: Fibonacci Sequence",
+      "lang": "python",
+      "code": "def fib(n):\n    a, b = 0, 1\n    while a < n:\n        print(a, end=' ')\n        a, b = b, a+b\n    print()",
+      "creation_date": "2025-06-30T11:45:00.000Z",
+      "views_count": 40,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "JavaScript: Event Listener",
+      "lang": "javascript",
+      "code": "document.getElementById('myButton').addEventListener('click', () => {\n  alert('Button clicked!');\n});",
+      "creation_date": "2025-07-01T08:20:00.000Z",
+      "views_count": 35,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "C++: Function Overload",
+      "lang": "cpp",
+      "code": "#include <iostream>\n\nvoid print(int i) {\n    std::cout << \"Int: \" << i << std::endl;\n}\nvoid print(double f) {\n    std::cout << \"Float: \" << f << std::endl;\n}\nint main() {\n    print(10);\n    print(10.5);\n    return 0;\n}",
+      "creation_date": "2025-07-02T16:00:00.000Z",
+      "views_count": 22,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Java: ArrayList Example",
+      "lang": "java",
+      "code": "import java.util.ArrayList;\n\npublic class ListExample {\n    public static void main(String[] args) {\n        ArrayList<String> cars = new ArrayList<String>();\n        cars.add(\"Volvo\");\n        cars.add(\"BMW\");\n        System.out.println(cars.get(0));\n    }\n}",
+      "creation_date": "2025-07-03T07:10:00.000Z",
+      "views_count": 18,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Python: Dictionary Iteration",
+      "lang": "python",
+      "code": "my_dict = {'a': 1, 'b': 2}\nfor key, value in my_dict.items():\n    print(f\"{key}: {value}\")",
+      "creation_date": "2025-07-04T12:55:00.000Z",
+      "views_count": 28,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "JavaScript: Async/Await Fetch",
+      "lang": "javascript",
+      "code": "async function fetchData() {\n  try {\n    const response = await fetch('https://api.example.com/data');\n    const data = await response.json();\n    console.log(data);\n  } catch (error) {\n    console.error('Error fetching data:', error);\n  }\n}",
+      "creation_date": "2025-07-05T18:30:00.000Z",
+      "views_count": 45,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "C++: Pointers",
+      "lang": "cpp",
+      "code": "#include <iostream>\n\nint main() {\n    int var = 20;\n    int* ptr = &var;\n    std::cout << \"Value: \" << *ptr << std::endl;\n    return 0;\n}",
+      "creation_date": "2025-07-06T09:40:00.000Z",
+      "views_count": 12,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Java: Try-Catch Block",
+      "lang": "java",
+      "code": "public class ExceptionHandling {\n    public static void main(String[] args) {\n        try {\n            int divideByZero = 10 / 0;\n        } catch (ArithmeticException e) {\n            System.out.println(\"Cannot divide by zero!\");\n        }\n    }\n}",
+      "creation_date": "2025-07-07T14:25:00.000Z",
+      "views_count": 27,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Python: Class Definition",
+      "lang": "python",
+      "code": "class Dog:\n    def __init__(self, name):\n        self.name = name\n    def bark(self):\n        return f\"{self.name} says Woof!\"",
+      "creation_date": "2025-07-08T10:00:00.000Z",
+      "views_count": 33,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "JavaScript: Array Map Method",
+      "lang": "javascript",
+      "code": "const numbers = [1, 2, 3];\nconst doubled = numbers.map(num => num * 2);\nconsole.log(doubled);",
+      "creation_date": "2025-07-09T15:30:00.000Z",
+      "views_count": 38,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "C++: Standard Library Vector",
+      "lang": "cpp",
+      "code": "#include <iostream>\n#include <vector>\n\nint main() {\n    std::vector<int> v = {10, 20, 30};\n    for (int n : v) {\n        std::cout << n << \" \";\n    }\n    return 0;\n}",
+      "creation_date": "2025-07-10T08:00:00.000Z",
+      "views_count": 17,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Java: String Concatenation",
+      "lang": "java",
+      "code": "public class StringOps {\n    public static void main(String[] args) {\n        String firstName = \"John\";\n        String lastName = \"Doe\";\n        String fullName = firstName + \" \" + lastName;\n        System.out.println(fullName);\n    }\n}",
+      "creation_date": "2025-07-11T11:20:00.000Z",
+      "views_count": 21,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Python: File Read Example",
+      "lang": "python",
+      "code": "with open('myfile.txt', 'r') as f:\n    content = f.read()\n    print(content)",
+      "creation_date": "2025-07-12T17:00:00.000Z",
+      "views_count": 29,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "JavaScript: Object Destructuring",
+      "lang": "javascript",
+      "code": "const person = { name: 'Alice', age: 30 };\nconst { name, age } = person;\nconsole.log(name, age);",
+      "creation_date": "2025-07-13T09:05:00.000Z",
+      "views_count": 31,
+      "public": true,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "C++: Simple Class",
+      "lang": "cpp",
+      "code": "#include <iostream>\n\nclass MyClass {\npublic:\n    void greet() {\n        std::cout << \"Hello from C++ class!\" << std::endl;\n    }\n};\n\nint main() {\n    MyClass obj;\n    obj.greet();\n    return 0;\n}",
+      "creation_date": "2025-07-14T13:40:00.000Z",
+      "views_count": 16,
+      "public": false,
+      "user": 1
+    }
+  },
+  {
+    "model": "MainApp.snippet",
+    "fields": {
+      "name": "Java: For-Each Loop",
+      "lang": "java",
+      "code": "public class ForEachExample {\n    public static void main(String[] args) {\n        int[] numbers = {1, 2, 3, 4, 5};\n        for (int num : numbers) {\n            System.out.println(num);\n        }\n    }\n}",
+      "creation_date": "2025-07-15T19:00:00.000Z",
+      "views_count": 24,
+      "public": false,
+      "user": 1
+    }
+  }
+]

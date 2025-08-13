@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пример без addEventListener</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #text-block {
+            padding: 20px;
+            border: 2px solid #3498db;
+            background-color: #eaf6ff;
+            font-size: 1.2em;
+            margin-top: 50px;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Этот класс будет переключаться */
+        .hidden {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Переключение класса по таймеру</h1>
+
+    <div id="text-block">
+        <p>Этот текст будет исчезать и появляться автоматически каждые 2 секунды.</p>
+    </div>
+
+    <script>
+        const textBlock = document.getElementById('text-block');
+
+        // Используем setInterval, чтобы выполнять код каждые 2000 миллисекунд
+        setInterval(() => {
+            // Переключаем класс 'hidden' на элементе
+            textBlock.classList.toggle('hidden');
+        }, 2000);
+    </script>
+
+</body>
+</html>

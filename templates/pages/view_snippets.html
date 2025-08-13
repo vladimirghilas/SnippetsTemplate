@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load my_tags %}
 {% block style %}
     {{ block.super }}
     <style>
@@ -16,23 +17,78 @@
                 <hr>
             </div>
         </div>
+        <div class="container mb-3">
+            <form action="" method="get" class="row g-2 align-items-end">
+                <!-- Поиск -->
+                <div class="col-md-5">
+                    <label for="search" class="form-label">Поиск</label>
+                    <input type="text" name="search" id="search" value="{{ search|default:'' }}" class="form-control"
+                           placeholder="Введите текст">
+                </div>
 
-        <div class="row">
-            <div class="col">
-                <p>На данной страницы будут отображаться все созданные сниппеты.</p>
-                <p>Пока тут просто пример, но скоро заменим реальными сниппетами из БД!</p>
-                <hr>
-            </div>
+                <!-- Кнопка "Найти" -->
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100 mt-4">Найти</button>
+                </div>
+
+                <!-- Теги -->
+                <div class="col-md-5">
+                    <label for="tag" class="form-label">Фильтр по тегу</label>
+                    <select name="tag_id" id="tag" class="form-select">
+                        <option value="">Выберите тег</option>
+                        {% for tag in available_tags %}
+                            <option value="{{ tag.id }}" {% if tag.id|stringformat:"s" == tag_id %}selected{% endif %}>
+                                {{ tag.name }}
+                            </option>
+                            {% empty %}
+                            <option disabled>Теги отсутствуют</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Кнопка "Фильтровать" -->
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-outline-primary w-100 mt-4">Фильтр</button>
+                </div>
+            </form>
         </div>
-        <div class="row">
-            <div class="col">
-                <form action="" method="get">
-                    <label>Search: </label>
-                    <input type="text" name="search" class="form-control">
-                    <input type="submit" value="Find">
-                </form>
+
+        <form action="" method="get">
+            <div class="row align-items-end mb-2">
+                <div class="col-md-5">
+                    <div class="filter-section">
+                        <select class="form-select" id="languageFilter" name="lang" )>
+                            <option value="">select language</option>
+                            {% for LANG_CHOICE in LANG_CHOICES %}
+                                <option {% if lang == LANG_CHOICE.0 %} selected {% endif %}
+                                                                       value="{{ LANG_CHOICE.0 }}">{{ LANG_CHOICE.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <input class="btn btn-primary w-100" type="submit" value="ok">
+                </div>
+                <div class="col-md-5">
+                    <div class="filter-section">
+                        {#         <label for="authorFilter" class="form-label">Фильтр по автору:</label>#}
+                        <select class="form-select" id="authorFilter" name="user_id">
+                            <option value="">select user</option>
+                            {% for user in users %}
+                                <option {% if user_id == user.id %} selected {% endif %}
+                                                                    value="{{ user.id }}">{{ user.username }}
+                                    --- {{ user.public_snippets }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-1">
+                    <input class="btn btn-primary w-100" type="submit" value="ok">
+                </div>
             </div>
-        </div>
+        </form>
+
         <div class="row">
             <div class="col">
                 <table class="table table-striped">
@@ -41,24 +97,24 @@
                         <th scope="col">ID</th>
                         <th scope="col">
                             {% if sort == "name" %}
-                                <a href="?sort=-name">Название</a>
+                                <a href="{% querystring sort='-name' %}">Название</a>
                                 <i style="color: white" class="fa-solid fa-arrow-up-a-z"></i>
                             {% elif sort == "-name" %}
-                                <a href="?sort=name">Название</a>
+                                <a href="{% querystring sort='name' %}">Название</a>
                                 <i style="color: white" class="fa-solid fa-arrow-up-z-a"></i>
                             {% else %}
-                                <a href="?sort=name">Название</a>
+                                <a href="{% querystring sort='name' %}">Название</a>
                             {% endif %}
                         </th>
                         <th>
                             {% if sort == "lang" %}
-                                <a href="?sort=-lang">Язык</a>
+                                <a href="{% querystring sort='-lang' %}">Язык</a>
                                 <i style="color: white" class="fa-solid fa-arrow-up-a-z"></i>
                             {% elif sort == "-lang" %}
-                                <a href="?sort=lang">Язык</a>
+                                <a href="{% querystring sort='lang' %}">Язык</a>
                                 <i style="color: white" class="fa-solid fa-arrow-up-z-a"></i>
                             {% else %}
-                                <a href="?sort=lang">Язык</a>
+                                <a href="{% querystring sort='lang' %}">Язык</a>
                             {% endif %}
                         </th>
                         <th scope="col">Дата создания</th>
@@ -67,7 +123,7 @@
                     </thead>
                     <tbody>
 
-                    {% for snippet in snippets %}
+                    {% for snippet in page_obj %}
                         <tr>
                             <td scope="row">{{ snippet.id }}</td>
                             <td>
@@ -78,9 +134,17 @@
                                 <a href="{% url 'snippet-edit' snippet.id %}">
                                     <i class="fa-solid fa-pencil"></i>
                                 </a>
+                                <br>
+                                {#                                taguri sub snippet#}
+                                {#                                {% for tag in snippet.tags.all %}#}
+                                {#                                    <a href="{% url 'snippets-by-tag' tag.id %}"#}
+                                {#                                       class="badge bg-primary me-1">{{ tag.name }}</a>#}
+                                {#                                    {% empty %}#}
+                                {#                                    <span class="text-muted">Без тегов</span>#}
+                                {#                                {% endfor %}#}
                             </td>
                             <td>
-                                <i class="fa-brands {{ snippet.icon_class }}"></i>
+                                <i class="fa-brands {{ snippet.lang | icon_class }}"></i>
                                 {{ snippet.lang }}
                             </td>
                             <td>{{ snippet.creation_date }}</td>
@@ -90,7 +154,7 @@
                                 {% else %}
                                     <i class="fa-solid fa-lock"></i>
                                 {% endif %}
-                                {{ snippet.user|default:'Anonim' }}
+                                {{ snippet.user|default:'Anonim'}}
                             </td>
                         </tr>
                     {% endfor %}
@@ -98,7 +162,49 @@
                     </tbody>
                 </table>
                 <div class="d-flex justify-content-end">
-                    <i class="text-muted">Всего сниппетов: 2</i></div>
+                    <i id="total snippets" class="text-muted">Всего сниппетов: {{ page_obj.paginator.count }}</i></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {# Блок пагинации #}
+                {% if page_obj.has_other_pages %} {# Проверяем, есть ли вообще другие страницы #}
+                    <nav aria-label="Пагинация статей">
+                        <ul class="pagination justify-content-center"> {# Центрируем пагинацию #}
+
+                            {# Ссылка на предыдущую страницу #}
+                            <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                                <a class="page-link"
+                                        {#                                   {% if page_obj.has_previous %}href="?page={{ page_obj.previous_page_number }}"{% endif %}#}
+                                   {% if page_obj.has_previous %}href="{% querystring page=page_obj.previous_page_number %}"{% endif %}
+                                   tabindex="-1" aria-disabled="true">Предыдущая</a>
+                            </li>
+
+                            {# Номера страниц #}
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active" aria-current="page">
+                                        {#                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>#}
+                                        <a class="page-link" href="{% querystring page=num %}">{{ num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        {#                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>#}
+                                        <a class="page-link" href="{% querystring page=num %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {# Ссылка на следующую страницу #}
+                            <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                                <a class="page-link"
+                                        {#                                   {% if page_obj.has_next %}href="?page={{ page_obj.next_page_number }}"{% endif %}>Следующая</a>#}
+                                   {% if page_obj.has_next %}href="{% querystring page=page_obj.next_page_number %}"{% endif %}>Следующая</a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                {% endif %}
             </div>
         </div>
     </div>

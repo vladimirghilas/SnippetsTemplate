@@ -11,48 +11,82 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item me-2">
+                        <a class="btn btn-warning" href="{% url "notifications" %}">
+                            Уведомления
+                            <span id="notification-count" class="badge bg-danger ms-1">0</span>
+                        </a>
+                    </li>
+                {% endif %}
+                    <li class="nav-item me-2">
+                        <a class="btn btn-outline-success" href="{% url "snippets-stats" %}">
+                            Статистика
+                        </a>
+                    </li>
                     {% if request.user.is_authenticated %}
                         <li class="nav-item me-2">
-                            <a class="btn btn-outline-secondary" href=" {% url "snippet-add" %} ">
+                            <a class="btn btn-outline-primary" href="{% url "snippet-add" %}">
                                 Добавить сниппет
                             </a>
                         </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="btn btn-outline-info" href="{% url "snippets-list" %}">
+                            Посмотреть сниппеты
+                        </a>
+                    </li>
+                    {% if request.user.is_authenticated %}
                         <li class="nav-item me-2">
                             <a class="btn btn-outline-primary" href="{% url 'snippets-my' %}">
                                 Мои сниппеты
                             </a>
                         </li>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="btn btn-outline-info" href=" {% url "snippets-list" %} ">
-                            Посмотреть сниппеты
-                        </a>
-                    </li>
-                    <li>
-                        {% if request.user.is_authenticated %}
-                            <div style="color: white"> Welcome, {{ request.user.username }}</div>
-                            <a href="{% url 'logout' %}">Logout</a>
-                        {% else %}
-                            <form action="{% url 'login' %}" method="post">
-                                {% csrf_token %}
-                                <input type="text" name="username" value="{{ username }}" placeholder="username">
-                                <input type="password" name="password" placeholder="password">
-                                {% if errors %}
-                                    <ul style="color: red">
-                                        {% for error in errors %}
-                                            <li> {{ error }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                {% endif %}
-                                <input type="submit" value="login">
-                            </form>
-                        {% endif %}
-                    </li>
-                    <li>
-                        <a class="btn btn-success" href=" {% url "registration" %} ">
-                            Registration
-                        </a>
-                    </li>
+                    {% if request.user.is_authenticated %}
+                        <li class="ms-4">
+                            <div class="pt-2" style="color: white">Welcome, {{ request.user.username }}
+                                <a href="{% url 'logout' %}">Выйти</a>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li class="nav-item dropdown ms-2">
+                            <a class="btn btn-outline-primary dropdown-toggle" href="#" id="navbarDropdown"
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Авторизация
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end {% if errors %}show {% endif %}"
+                                 style="min-width: 300px;">
+                                <form class="px-4 py-3" action="{% url 'login' %}" method="post">
+                                    {% csrf_token %}
+                                    {% if errors %}
+                                        <div class="alert alert-danger" role="alert">
+                                            <ul>
+                                                {% for error in errors %}
+                                                    <li>{{ error }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-group mb-2">
+                                        <input type="text" class="form-control" id="usernameInput" name="username"
+                                               placeholder="Имя пользователя" required>
+                                    </div>
+                                    <div class="form-group mb-2">
+                                        <input type="password" class="form-control" id="passwordInput" name="password"
+                                               placeholder="Пароль" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block">Войти</button>
+                                </form>
+                                <div class="dropdown-divider"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <a class="btn btn-success" href="{% url 'registration' %}">
+                                Регистрация
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

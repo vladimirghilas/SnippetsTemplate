@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Продвинутая смена классов</title>
+
+    <style>
+        .toggle-button {
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            transition: background-color 0.8s ease-in-out;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Классы для разных цветов */
+        .color-1 { background-color: #007bff; }
+        .color-2 { background-color: #28a745; }
+        .color-3 { background-color: #ffc107; }
+        .color-4 { background-color: #dc3545; }
+        .color-5 { background-color: #6f42c1; }
+    </style>
+</head>
+<body>
+
+    <button id="my-button" class="toggle-button color-1">Нажми меня!</button>
+
+    <script>
+        const myButton = document.getElementById('my-button');
+        const colors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5'];
+        let currentColorIndex = 0;
+
+        myButton.addEventListener('click', () => {
+            // Удаляем текущий класс
+            myButton.classList.remove(colors[currentColorIndex]);
+
+            // Переходим к следующему цвету
+            currentColorIndex = (currentColorIndex + 1) % colors.length;
+
+            // Добавляем новый класс
+            myButton.classList.add(colors[currentColorIndex]);
+        });
+    </script>
+
+</body>
+</html>
