@@ -7,29 +7,29 @@ function fetchApiData() {
             'Content-Type': 'application/json'
         }
     })
-    .then(function(response) {
-        // Проверяем статус ответа
-        if (!response.ok) {
-            throw new Error('HTTP error! status: ' + response.status);
-        }
+        .then(function (response) {
+            // Проверяем статус ответа
+            if (!response.ok) {
+                throw new Error('HTTP error! status: ' + response.status);
+            }
 
-        // Парсим JSON ответ
-        return response.json();
-    })
-    .then(function(data) {
-        // Обрабатываем полученные данные
-        console.log('Полученные данные:', data);
+            // Парсим JSON ответ
+            return response.json();
+        })
+        .then(function (data) {
+            // Обрабатываем полученные данные
+            console.log('Полученные данные:', data);
 
-        // Пример обработки данных
-        if (data.success) {
-            displayData(data.message);
-        } else {
-            console.error('Ошибка API:', data.error);
-        }
-    })
-    .catch(function(error) {
-        console.error('Ошибка при отправке запроса:', error);
-    });
+            // Пример обработки данных
+            if (data.success) {
+                displayData(data.message);
+            } else {
+                console.error('Ошибка API:', data.error);
+            }
+        })
+        .catch(function (error) {
+            console.error('Ошибка при отправке запроса:', error);
+        });
 }
 
 // Функция для отображения данных на странице
@@ -49,35 +49,45 @@ function sendPostRequest(data) {
         },
         body: JSON.stringify(data)
     })
-    .then(function(response) {
-        if (!response.ok) {
-            throw new Error('HTTP error! status: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(function(result) {
-        console.log('POST ответ:', result);
-        return result;
-    })
-    .catch(function(error) {
-        console.error('Ошибка при отправке POST запроса:', error);
-    });
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('HTTP error! status: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(function (result) {
+            console.log('POST ответ:', result);
+            return result;
+        })
+        .catch(function (error) {
+            console.error('Ошибка при отправке POST запроса:', error);
+        });
 }
 
 // Вызываем функцию при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    // Добавляем кнопку для тестирования API
-    const button = document.createElement('button');
-    button.textContent = 'Получить данные от API';
-    button.onclick = fetchApiData;
+document.addEventListener('DOMContentLoaded', function () {
+    // Проверяем, авторизован ли пользователь
+    fetch('/api/is_authenticated/')
+        .then(resp => resp.json())
+        .then(authData => {
+            if (!authData.is_authenticated) {
+                console.log("Пользователь не авторизован, запросы к API не отправляются");
+                return;
+            }
+                // Добавляем кнопку для тестирования API
+                const button = document.createElement('button');
+                button.textContent = 'Получить данные от API';
+                button.onclick = fetchApiData;
 
-    const container = document.getElementById('api-container');
-    if (container) {
-        container.appendChild(button);
+                const container = document.getElementById('api-container');
+                if (container) {
+                    container.appendChild(button);
 
-        // Создаем контейнер для результатов
-        const resultDiv = document.createElement('div');
-        resultDiv.id = 'api-result';
-        container.appendChild(resultDiv);
-    }
-});
+                    // Создаем контейнер для результатов
+                    const resultDiv = document.createElement('div');
+                    resultDiv.id = 'api-result';
+                    container.appendChild(resultDiv);
+                 }
+            })
+        .catch(err => console.error('Ошибка проверки авторизации:', err));
+        });

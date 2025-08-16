@@ -22,6 +22,7 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
 def index_page(request):
     context = {'pagename': 'PythonBin'}
     messages.success(request, f'Hello word')
@@ -67,9 +68,10 @@ def snippets_page(request, my_snippets, num_snippets_on_page=5):
     else:
         pagename = 'Просмотр сниппетов'
         if request.user.is_authenticated:
-            snippets = Snippet.objects.filter(Q(public=True) | Q(public=False, user=request.user)).prefetch_related('tags')
+            snippets = Snippet.objects.filter(Q(public=True) | Q(public=False, user=request.user)).select_related(
+                'user').prefetch_related('tags')
         else:
-            snippets = Snippet.objects.filter(public=True).prefetch_related('tags')
+            snippets = Snippet.objects.filter(public=True).select_related('user').prefetch_related('tags')
 
     # search
     search = request.GET.get('search')
@@ -89,7 +91,8 @@ def snippets_page(request, my_snippets, num_snippets_on_page=5):
         snippets = snippets.filter(tags__id=tag_id)
 
     user_id = request.GET.get('user_id')
-    valid_users = User.objects.annotate(public_snippets=Count('snippet', filter=Q(snippet__public=True))).filter(public_snippets__gt=0)
+    valid_users = User.objects.annotate(public_snippets=Count('snippet', filter=Q(snippet__public=True))).filter(
+        public_snippets__gt=0)
     if user_id and valid_users.filter(id=user_id).exists():
         snippets = snippets.filter(user__id=user_id)
 
@@ -115,8 +118,9 @@ def snippets_page(request, my_snippets, num_snippets_on_page=5):
         'tag_id': tag_id,
         'available_tags': available_tags,
         'user_id': int(user_id) if user_id else None
-        }
+    }
     return render(request, 'pages/view_snippets.html', context)
+
 
 def snippet_detail(request, snippet_id):
     # snippet = get_object_or_404(Snippet, id=id)
@@ -148,15 +152,16 @@ def snippet_detail(request, snippet_id):
 def snippet_delete(request, id):
     snippet = get_object_or_404(Snippet, id=id)
     if snippet.user != request.user:
-        raise PermissionDenied
+        messages.error(request, "У вас нет прав для удаления этого сниппета.")
+        return redirect('snippets-list')
     snippet.delete()
-    messages.success(request,f'Snippet "{snippet.name}" was deleted.')
+    messages.success(request, f'Snippet "{snippet.name}" was deleted.')
     return redirect('snippets-list')
 
 
 def snippet_edit(request, id):
     if request.method == 'GET':
-        snippet =get_object_or_404(Snippet, id=id)
+        snippet = get_object_or_404(Snippet, id=id)
         form = SnippetForm(instance=snippet)
         context = {
             'pagename': "Редактировать Сниппет",
@@ -183,6 +188,7 @@ def snippet_edit(request, id):
                 'snippet': snippet
             }
             return render(request, 'pages/add_snippet.html', context)
+
 
 def login(request):
     if request.method == "POST":
@@ -238,10 +244,11 @@ def comment_add(request):
             comment.snippet = snippet
             comment.author = request.user
             comment.save()
-            messages.success(request,f'New comments {comment} added')
+            messages.success(request, f'New comments {comment} added')
 
         return redirect('snippet-detail', snippet_id=snippet.id)
     raise Http404
+
 
 def snippets_stats_view(request):
     total_snippets = Snippet.objects.count()
@@ -257,17 +264,19 @@ def snippets_stats_view(request):
         'top_snippets': top_snippets,
         'top_users': top_users,
     }
-    return render(request,'pages/statistic.html', context)
+    return render(request, 'pages/statistic.html', context)
+
 
 @login_required
-def add_tag_to_snippet(request,snippet_id):
+def add_tag_to_snippet(request, snippet_id):
     snippet = get_object_or_404(Snippet, id=snippet_id)
     if request.method == 'POST':
         tag_id = request.POST.get('tag_id')
         if tag_id:
             tag = get_object_or_404(Tag, id=tag_id)
             snippet.tags.add(tag)
-    return redirect('snippet-detail',snippet_id=snippet.id)
+    return redirect('snippet-detail', snippet_id=snippet.id)
+
 
 def snippets_by_tag(request, tag_id):
     tag = Tag.objects.get(id=tag_id)
@@ -281,19 +290,88 @@ def snippets_by_tag(request, tag_id):
 
 
 @login_required
-def user_notifications(request):
+def user_notifications(request,id=None):
     """Страница с уведомлениями пользователя"""
-    # Отмечаем все уведомления как прочитанные при переходе на страницу
-    ...
-    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    # Отмечаем 1 уведомление как прочитанные
+    if id:
+        notif = Notification.objects.get(recipient=request.user, id=id)
+        notif.is_read = True
+        notif.save()
+        return redirect('snippet-detail', snippet_id=notif.comment.snippet.id)
+
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
     # Получаем все уведомления для авторизованного пользователя, сортируем по дате создания
-    notifications = Notification.objects.filter(recipient=request.user)
+    notifications = list(Notification.objects.filter(recipient=request.user).select_related('comment__snippet'))
+
+    read_count = Notification.objects.filter(recipient=request.user, is_read=True)
+
+    # notif_coment_snipet = Notification.objects.filter(
+    #     recipient=request.user,
+    #     comment__snippet_id=snippet_id
+    # ).select_related('comment', 'comment__snippet')
 
     context = {
         'pagename': 'Мои уведомления',
-        'notifications': notifications
+        'notifications': notifications,
+        'unread_count': unread_count,
+        'read_count': read_count,
+        # 'notif_coment_snipet': notif_coment_snipet,
     }
     return render(request, 'pages/notifications.html', context)
+
+
+@login_required
+def unread_notifications_count(request):
+    # """
+    # API endpoint для получения количества непрочитанных уведомлений
+    # Использует long polling - отвечает только если есть непрочитанные уведомления
+    # """
+    import time
+
+    # Максимальное время ожидания (30 секунд)
+    max_wait_time = 10
+    check_interval = 1  # Проверяем каждую секунду
+
+    last_count = int(request.GET.get('last_count', 0))
+
+    start_time = time.time()
+    unread_count = 0
+
+    while time.time() - start_time < max_wait_time:
+        # Получаем количество непрочитанных уведомлений
+        unread_count = Notification.objects.filter(
+            recipient=request.user,
+            is_read=False
+        ).count()
+
+        # Если есть непрочитанные уведомления, сразу отвечаем
+        if unread_count > last_count:
+            return JsonResponse({
+                'success': True,
+                'unread_count': unread_count,
+                'timestamp': str(datetime.now())
+            })
+
+        # Ждем перед следующей проверкой
+        time.sleep(check_interval)
+
+    # Если время истекло и нет уведомлений, возвращаем 0
+    return JsonResponse({
+        'success': True,
+        'unread_count': unread_count,
+        'timestamp': str(datetime.now())
+    })
+
+
+@login_required
+def notifications_delete(request, id=None):
+    if id:
+        notification = get_object_or_404(Notification, id=id, recipient=request.user)
+        notification.delete()
+    else:
+        Notification.objects.filter(recipient=request.user, is_read=True).delete()
+
+    return redirect('notifications')
 
 
 @csrf_exempt
@@ -356,47 +434,38 @@ def simple_api_view(request):
             }, status=500)
 
 
-@login_required
-def unread_notifications_count(request):
-    """
-    API endpoint для получения количества непрочитанных уведомлений
-    Использует long polling - отвечает только если есть непрочитанные уведомления
-    """
-    import time
-
-    # Максимальное время ожидания (30 секунд)
-    max_wait_time = 30
-    check_interval = 1  # Проверяем каждую секунду
-
-    start_time = time.time()
-
-    while time.time() - start_time < max_wait_time:
-        # Получаем количество непрочитанных уведомлений
-        unread_count = Notification.objects.filter(
-            recipient=request.user,
-            is_read=False
-        ).count()
-
-        # Если есть непрочитанные уведомления, сразу отвечаем
-        if unread_count > 0:
-            return JsonResponse({
-                'success': True,
-                'unread_count': unread_count,
-                'timestamp': str(datetime.now())
-            })
-
-        # Ждем перед следующей проверкой
-        time.sleep(check_interval)
-
-    # Если время истекло и нет уведомлений, возвращаем 0
-    return JsonResponse({
-        'success': True,
-        'unread_count': 0,
-        'timestamp': str(datetime.now())
-    })
-
 def is_authenticated(request):
     if request.user.is_authenticated:
         return JsonResponse({'is_authenticated': True})
     else:
         return JsonResponse({'is_authenticated': False})
+
+
+def user_profile(request):
+    context = {
+        'profile_user': request.user
+    }
+    return render(request, 'pages/user_profile.html', context)
+
+
+def user_statistics(request):
+    user_snippets = Snippet.objects.filter(user=request.user)
+
+    total_snippets = user_snippets.count()
+
+    if total_snippets > 0:
+        average_views = user_snippets.aggregate(avg_views=Avg('views'))['avg_views']
+
+    else:
+        average_views = 0
+
+    top_snippets = user_snippets.order_by('-views')[:5]
+
+    context = {
+        'username': request.user.username,  # <--- aici denumirea utilizatorului
+        'total_snippets': total_snippets,
+        'average_views': average_views,
+        'top_snippets': top_snippets,
+    }
+
+    return render(request, 'statistics.html', context)

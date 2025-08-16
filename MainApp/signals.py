@@ -14,18 +14,25 @@ def send_message(sender, instance, created, **kwargs):
     if created:
         print(f'User {instance.username} was created')
 
+
 @receiver(snippet_view, sender=None)
 def add_view_count(sender, snippet, **kwargs):
     snippet.views_count = F('views_count') + 1
     snippet.save(update_fields=['views_count'])
     snippet.refresh_from_db()
 
+
 @receiver(post_save, sender=Comment)
 def create_comment_notification(sender, instance, created, **kwargs):
     if created and instance.snippet.user and instance.author != instance.snippet.user:
+        preview_text = instance.text
+        if len(preview_text) > 100:
+            preview_text = preview_text[:100] + "..."
+
         Notification.objects.create(
-            recipient = instance.snippet.user,
+            recipient=instance.snippet.user,
             notification_type="comment",
-            title='Новый комментарий',
-            message=f'{instance.author.username} оставил комментарий к вашему сниппету:{instance.snippet.name}'
+            title=f'Новый комментарий к спиппету {instance.snippet.name}',
+            comment=instance,
+            message=f'Пользователь {instance.author.username} оставил комментарий к вашему сниппету: {preview_text}'
         )

@@ -6,8 +6,9 @@
 
 // Глобальные переменные для состояния
 let isPolling = false;
-let pollingInterval = null;
-let notificationCounter = document.getElementById('notification-count');;
+// let pollingInterval = null;
+let notificationCounter = document.getElementById('notification-count');
+let lastNotificationCount = 0;
 
 const BASE_URL = '/api/notifications/unread-count/';
 
@@ -23,7 +24,7 @@ function poll() {
     if (!isPolling) return;
 
     // Создаем промис для fetch запроса
-    fetch(BASE_URL, {
+    fetch(`${BASE_URL}?last_count=${lastNotificationCount}`, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -35,6 +36,7 @@ function poll() {
         .then(function (data) {
             if (data.success) {
                 notificationCounter.textContent = data.unread_count;
+                lastNotificationCount = data.unread_count;
             }
         })
         .catch(function (error) {
@@ -43,7 +45,7 @@ function poll() {
         .finally(function () {
             // Продолжаем polling
             if (isPolling) {
-                pollingInterval = setTimeout(function () {
+                setTimeout(function () {
                     poll();
                 }, 1000);
             }
@@ -51,5 +53,6 @@ function poll() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    startPolling();
-});
+    // Проверяем, авторизован ли пользователь
+            startPolling()
+    })

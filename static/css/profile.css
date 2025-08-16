@@ -1,0 +1,94 @@
+            .profile-header {
+                padding: 2rem 0;
+                margin-bottom: 2rem;
+            }
+
+            .profile-avatar {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                border: 4px solid #dee2e6;
+                display: flex; /* Используем flexbox для центрирования */
+                justify-content: center;
+                align-items: center;
+            }
+
+            .avatar-image {
+                width: 90px; /* Задаём новый размер для изображения */
+                height: 90px;
+            }
+
+            .profile-stats {
+                display: flex;
+                justify-content: space-around;
+                margin: 1rem 0;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+                font-weight: bold;
+                color: #667eea;
+            }
+
+            .stat-label {
+                color: #666;
+                font-size: 0.9rem;
+            }
+
+            .nav-tabs {
+                border-bottom: 2px solid #dee2e6;
+                margin-bottom: 2rem;
+            }
+
+            .nav-tabs .nav-link {
+                border: none;
+                color: #666;
+                font-weight: 500;
+                padding: 1rem 1.5rem;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: #667eea;
+                border-bottom: 3px solid #667eea;
+                background: none;
+            }
+
+            .tab-content {
+                padding: 1rem 0;
+            }
+
+            .action-item {
+                padding: 1rem;
+                border-left: 3px solid #667eea;
+                margin-bottom: 1rem;
+                background: #f8f9fa;
+                border-radius: 0 5px 5px 0;
+            }
+
+            .action-date {
+                color: #666;
+                font-size: 0.9rem;
+            }
+
+            .snippet-card {
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                transition: transform 0.2s;
+            }
+
+            .snippet-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .edit-profile-btn {
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+            }

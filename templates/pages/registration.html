@@ -7,8 +7,17 @@
                 <form method="post" action="{% url 'registration' %}">
                     {% csrf_token %}
                     {% for field in form %}
-                        <div class="mb-3">
+                        <div class="mb-3" style="position: relative">
                             {{ field }}
+                            {% if field.name == "password1" or field.name == "password2" %}
+                                <!-- Buton pentru a arăta/ascunde parola -->
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary position-absolute"
+                                        style="top:0; right:0;"
+                                        onclick="togglePassword('{{ field.id_for_label }}', this)">
+                                    👁
+                                </button>
+                            {% endif %}
                             {% if  field.errors %}
                                 <div class="alert alert-danger" role="alert">
                                     <ul>
@@ -25,5 +34,18 @@
             </div>
         </div>
     </div>
+
+    <script>
+function togglePassword(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (input.type === "password") {
+        input.type = "text";
+        btn.textContent = '🙈';
+    } else {
+        input.type = "password";
+        btn.textContent = '👁';
+    }
+}
+</script>
 {% endblock %}
 

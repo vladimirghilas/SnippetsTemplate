@@ -11,14 +11,14 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav ms-auto mb-2 mb-md-0">
-                {% if request.user.is_authenticated %}
-                    <li class="nav-item me-2">
-                        <a class="btn btn-warning" href="{% url "notifications" %}">
-                            Уведомления
-                            <span id="notification-count" class="badge bg-danger ms-1">0</span>
-                        </a>
-                    </li>
-                {% endif %}
+                    {% if request.user.is_authenticated %}
+                        <li class="ps-3">
+                            <a class="btn btn-outline-warning" href="{% url 'notifications' %}">
+                                <i class="fas fa-bell"></i> Уведомления
+                                <span id="notification-count" class="badge bg-danger ms-1">0</span>
+                            </a>
+                        </li>
+                    {% endif %}
                     <li class="nav-item me-2">
                         <a class="btn btn-outline-success" href="{% url "snippets-stats" %}">
                             Статистика
@@ -44,9 +44,22 @@
                         </li>
                     {% endif %}
                     {% if request.user.is_authenticated %}
-                        <li class="ms-4">
-                            <div class="pt-2" style="color: white">Welcome, {{ request.user.username }}
-                                <a href="{% url 'logout' %}">Выйти</a>
+                        <li class="nav-item dropdown ms-2">
+                            <a class="btn btn-outline-light dropdown-toggle" href="#" id="userDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i> {{ request.user.username }}
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end" style="min-width: 200px;">
+                                <a class="dbtn btn-outline-primary" href="{% url 'profile' %}">
+                                    <i class="fas fa-user-circle"></i> Мой профиль
+                                </a>
+                                <a class="dbtn btn-outline-primary" href="{% url 'snippets-my' %}">
+                                    <i class="fas fa-edit"></i> Редактировать профиль
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">
+                                    <a href="{% url 'logout' %}">Выйти</a>
+                                </a>
                             </div>
                         </li>
                     {% else %}

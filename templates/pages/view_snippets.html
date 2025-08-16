@@ -128,20 +128,14 @@
                             <td scope="row">{{ snippet.id }}</td>
                             <td>
                                 <a href="{% url 'snippet-detail' snippet.id %}">{{ snippet.name }}</a>
-                                <a href="{% url 'snippet-delete' snippet.id %}">
+                                <a href="{% url 'snippet-delete' snippet.id %}"
+                                   onclick="return confirm('Вы уверены, что хотите удалить этот сниппет?');">
                                     <i class="fa-solid fa-trash"></i>
                                 </a>
                                 <a href="{% url 'snippet-edit' snippet.id %}">
                                     <i class="fa-solid fa-pencil"></i>
                                 </a>
                                 <br>
-                                {#                                taguri sub snippet#}
-                                {#                                {% for tag in snippet.tags.all %}#}
-                                {#                                    <a href="{% url 'snippets-by-tag' tag.id %}"#}
-                                {#                                       class="badge bg-primary me-1">{{ tag.name }}</a>#}
-                                {#                                    {% empty %}#}
-                                {#                                    <span class="text-muted">Без тегов</span>#}
-                                {#                                {% endfor %}#}
                             </td>
                             <td>
                                 <i class="fa-brands {{ snippet.lang | icon_class }}"></i>
@@ -163,6 +157,11 @@
                 </table>
                 <div class="d-flex justify-content-end">
                     <i id="total snippets" class="text-muted">Всего сниппетов: {{ page_obj.paginator.count }}</i></div>
+            </div>
+            <div>
+                <a href="{% url 'snippets-list' %}" class="btn btn-secondary">
+                    Сбросить фильтры
+                </a>
             </div>
         </div>
         <div class="row">

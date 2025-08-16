@@ -20,6 +20,8 @@ LANG_ICONS = {
     "javascript": "fa-js",
     "java": "fa-java",
 }
+
+
 class LikeDislike(models.Model):
     LIKE = 1
     DISLIKE = -1
@@ -39,7 +41,6 @@ class LikeDislike(models.Model):
         unique_together = ['user', 'content_type', 'object_id']
 
 
-
 class Tag(models.Model):
     name = models.CharField(max_length=20, unique=True)
 
@@ -49,15 +50,16 @@ class Tag(models.Model):
     def __str__(self):
         return f"Tag: {self.name}"
 
+
 class Snippet(models.Model):
     class Meta:
         ordering = ['name', 'lang']
 
     name = models.CharField(max_length=100)
-    lang = models.CharField(max_length=30,choices=LANG_CHOICES)
+    lang = models.CharField(max_length=30, choices=LANG_CHOICES)
     code = models.TextField(max_length=5000)
     creation_date = models.DateTimeField(auto_now_add=True)
-    updated_at =models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     views_count = models.PositiveIntegerField(default=0)
     description = models.TextField(blank=True, null=True)
     public = models.BooleanField(default=True)
@@ -67,13 +69,14 @@ class Snippet(models.Model):
     def __repr__(self):
         return f"S: {self.name}|{self.lang} views:{self.views_count} public:{self.public} user:{self.user}"
 
+
 class Comment(models.Model):
     text = models.TextField(verbose_name="Текст комментария")
     creation_date = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     author = models.ForeignKey(User,
-            on_delete=models.SET_NULL, null=True, related_name='comments',verbose_name="Автор")
+                               on_delete=models.SET_NULL, null=True, related_name='comments', verbose_name="Автор")
     snippet = models.ForeignKey(Snippet,
-            on_delete=models.CASCADE, related_name='comments',verbose_name="Сниппет")
+                                on_delete=models.CASCADE, related_name='comments', verbose_name="Сниппет")
     likes = GenericRelation(LikeDislike)
 
     def __repr__(self):
@@ -90,7 +93,7 @@ class Notification(models.Model):
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
     title = models.CharField(max_length=255)
-    comment = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True)
+    comment   = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,3 +103,16 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Уведомление для {self.recipient.username}: {self.title}"
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    bio = models.TextField(max_length=500, blank=True)
+    website = models.URLField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_avatar_url(self):
+        if self.avatar:
+            return self.avatar.url
+        return '/static/images/default-avatar.png'
