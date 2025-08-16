@@ -27,11 +27,14 @@ urlpatterns = [
     path('notifications/delete/', views.notifications_delete, name='delete_read_notifications'),
     path('notifications/delete/<int:id>/', views.notifications_delete, name='delete_notification'),
     path('notifications/mark_read/<int:id>/', views.user_notifications, name='mark_notification'),
-path(
-    'notifications/snippet/<int:snippet_id>/',
-    views.user_notifications,
-    name='notifications_by_snippet'
-),
+    path('api/comment/like/', views.add_comment_like, name="comment-like"),
+    path('api/snippet/like/', views.add_snippet_like, name="snippet-like"),
+
+    # path(
+    #     'notifications/snippet/<int:snippet_id>/',
+    #     views.user_notifications,
+    #     name='notifications_by_snippet'
+    # ),
     path('profile/', views.user_profile, name="profile"),
 ]
 # if settings.DEBUG:

@@ -1,10 +1,11 @@
 import logging
 
+from django.contrib.contenttypes.models import ContentType
 from django.http import Http404, HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import is_valid_path
-from MainApp.models import Snippet, Comment, LANG_CHOICES, Tag, Notification
+from MainApp.models import Snippet, Comment, LANG_CHOICES, Tag, Notification, LikeDislike
 from MainApp.forms import SnippetForm, UserRegistrationForm, CommentForm
 from django.db.models import F, Q, Count, Avg
 from MainApp.models import LANG_ICONS
@@ -16,7 +17,7 @@ from django.contrib import messages
 from MainApp.signals import snippet_view
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 import json
 from datetime import datetime
 
@@ -440,13 +441,81 @@ def is_authenticated(request):
     else:
         return JsonResponse({'is_authenticated': False})
 
+@require_POST
+@login_required
+def add_comment_like(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        comment_id = data.get('comment_id')
+        vote = data.get('vote')
+
+        existing_vote, created = LikeDislike.objects.get_or_create(
+            user = request.user,
+            content_type=ContentType.objects.get_for_model(Comment),
+            object_id = comment_id,
+            defaults={'vote':vote}
+        )
+        if not created:
+            if existing_vote.vote == vote:
+                existing_vote.delete()
+            else:
+                existing_vote = vote
+                existing_vote.save()
+
+        comment=Comment.objects.get(id=comment_id)
+        responce_data = {
+            "success": True,
+            "likes_count": comment.likes_count(),
+            "dislikes_count": comment.dislikes_count(),
+        }
+
+        return JsonResponse(responce_data)
+
+@require_POST
+@login_required
+def add_snippet_like(request):
+    data = json.loads(request.body)
+    snippet_id = data.get('snippet_id')
+    vote = data.get('vote')
+
+    if not snippet_id:
+        return JsonResponse({"success": False, "error": "No snippet_id provided"}, status=400)
+
+    existing_vote, created = LikeDislike.objects.get_or_create(
+        user=request.user,
+        content_type=ContentType.objects.get_for_model(Snippet),
+        object_id=snippet_id,
+        defaults={'vote': vote}
+    )
+    snippet = Snippet.objects.get(id=snippet_id)
+    if not created:
+        if existing_vote.vote == vote:
+            existing_vote.delete()
+        else:
+            existing_vote.vote = vote
+            existing_vote.save()
+
+    if vote == 1 and snippet.user != request.user:
+        Notification.objects.create(
+            recipient = snippet.user,
+            notification_type = ('like'),
+            title=f"{request.user.username} поставил лайк вашему сниппету",
+            comment=None,
+            message=f"Пользователь {request.user.username} поставил лайк вашему сниппету: {snippet.name}"
+        )
+
+    return JsonResponse({
+        'success': True,
+        'likes_count': snippet.likes_count(),
+        'dislikes_count': snippet.dislikes_count(),
+    })
+
 
 def user_profile(request):
     context = {
         'profile_user': request.user
     }
     return render(request, 'pages/user_profile.html', context)
-
 
 def user_statistics(request):
     user_snippets = Snippet.objects.filter(user=request.user)

@@ -51,7 +51,21 @@
                 <!-- Formularul activ pentru adăugare tag -->
             </div>
         </div>
+        <div class="d-inline-flex align-items-center me-3" style="padding: 5px 0;">
+            <button class="btn btn-sm btn-outline-success me-1 snippet-like"
+                    data-snippet-id="{{ snippet.id }}" data-vote="1">
+                <i class="fa-regular fa-thumbs-up"></i>
+            </button>
+            <span class="badge bg-success me-2"
+                  id="snippet-likes-{{ snippet.id }}">{{ snippet.likes_count }}</span>
 
+            <button class="btn btn-sm btn-outline-danger me-1 snippet-dislike"
+                    data-snippet-id="{{ snippet.id }}" data-vote="-1">
+                <i class="fa-solid fa-thumbs-down"></i>
+            </button>
+            <span class="badge bg-danger"
+                  id="snippet-dislikes-{{ snippet.id }}">{{ snippet.dislikes_count }}</span>
+        </div>
         <div class="row">
             <div class="col-md-8">
                 <form action="{% url 'comment-add' %}" method="POST"
@@ -84,72 +98,86 @@
                 </form>
             </div>
         </div>
-        <table class="table">
-            <thead>
+        <tbody>
+        {% for comment in comments %}
+            <li>
+                <div>
+                    <h5 class="mb-1">{{ comment.author.username }}</h5>
+                    <small class="text-muted">{{ comment.creation_date | date:"j E Y г. в H:i" }}</small>
+                </div>
+                <p class="mb-1">
+                    {{ comment.text }}
+                </p>
+                <small>
+                    <div class="d-inline-flex align-items-center me-3">
+                        <button class="btn btn-sm btn-outline-success me-1 btn-like"
+                                data-comment-id="{{ comment.id }}"
+                                title="Лайк">
+                            <i class="fa-regular fa-thumbs-up"></i>
+                        </button>
+                        <span id="likes-{{ comment.id }}" class="badge bg-success me-2">{{ comment.likes_count }}</span>
+
+                        <button class="btn btn-sm btn-outline-danger me-1 btn-dislike"
+                                data-comment-id="{{ comment.id }}"
+                                title="Дизлайк">
+                            <i class="fa-solid fa-thumbs-down"></i>
+                        </button>
+                        <span id="dislikes-{{ comment.id }}" class="badge bg-danger">{{ comment.dislikes_count }}</span>
+                    </div>
+                </small>
+            </li>
+            {% empty %}
             <tr>
-                <th>Автор</th>
-                <th>Комментарий</th>
-                <th>Дата</th>
+                <td colspan="3" class="text-center fst-italic">Пока нет комментариев. Будьте первым!</td>
             </tr>
-            </thead>
-            <tbody>
-            {% for comment in comments %}
-                <tr>
-                    <td>{{ comment.author.username }}</td>
-                    <td>{{ comment.text }}</td>
-                    <td>{{ comment.creation_date | date:"Y-m-d H:i" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center fst-italic">Пока нет комментариев. Будьте первым!</td>
-                </tr>
-            {% endfor %}
+        {% endfor %}
 
-            {% if comments.has_other_pages %}
-                <tr>
-                    <td colspan="3" class="text-center">
-                        <nav aria-label="Навигация по страницам">
-                            <ul class="pagination justify-content-center">
-                                {% if comments.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ comments.previous_page_number }}"
-                                           aria-label="Предыдущая">
-                                            &laquo; Предыдущая
-                                        </a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item disabled">
-                                        <span class="page-link">&laquo; Предыдущая</span>
-                                    </li>
-                                {% endif %}
-
-                                <li class="page-item disabled">
-                                    <span class="page-link">Страница {{ comments.number }} из {{ comments.paginator.num_pages }}</span>
+        {% if comments.has_other_pages %}
+            <tr>
+                <td colspan="3" class="text-center">
+                    <nav aria-label="Навигация по страницам">
+                        <ul class="pagination justify-content-center">
+                            {% if comments.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ comments.previous_page_number }}"
+                                       aria-label="Предыдущая">
+                                        &laquo; Предыдущая
+                                    </a>
                                 </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">&laquo; Предыдущая</span>
+                                </li>
+                            {% endif %}
 
-                                {% if comments.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ comments.next_page_number }}"
-                                           aria-label="Следующая">Следующая &raquo;</a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item disabled">
-                                        <span class="page-link">Следующая &raquo;</span>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    </td>
-                </tr>
-            {% endif %}
-            </tbody>
-        </table>
+                            <li class="page-item disabled">
+                                <span class="page-link">Страница {{ comments.number }} из {{ comments.paginator.num_pages }}</span>
+                            </li>
+
+                            {% if comments.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ comments.next_page_number }}"
+                                       aria-label="Следующая">Следующая &raquo;</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Следующая &raquo;</span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </td>
+            </tr>
+        {% endif %}
+        </tbody>
     </div>
 
 {% endblock %}
 {% block scripts %}
-    {{block.super}}
+    {{ block.super }}
     <script src="{% static 'js/comment_count.js' %}"></script>
-	<script src="{% static 'js/utils_copy.js' %}"></script>
+    <script src="{% static 'js/utils_copy.js' %}"></script>
     <script src="{% static 'js/prism.js' %}"></script>
+    <script src="{% static 'js/like_dislike_comment.js' %}"></script>
+    <script src="{% static 'js/like_dislike_snippet.js' %}"></script>
 {% endblock %}

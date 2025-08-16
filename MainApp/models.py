@@ -65,10 +65,16 @@ class Snippet(models.Model):
     public = models.BooleanField(default=True)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE, blank=True, null=True)
     tags = models.ManyToManyField(to=Tag, blank=True)
+    likes = GenericRelation(LikeDislike)
 
     def __repr__(self):
         return f"S: {self.name}|{self.lang} views:{self.views_count} public:{self.public} user:{self.user}"
 
+    def likes_count(self):
+        return self.likes.filter(vote=LikeDislike.LIKE).count()
+
+    def dislikes_count(self):
+        return self.likes.filter(vote=LikeDislike.DISLIKE).count()
 
 class Comment(models.Model):
     text = models.TextField(verbose_name="Текст комментария")
@@ -82,6 +88,12 @@ class Comment(models.Model):
     def __repr__(self):
         return f"C: {self.text[:10]} author:{self.author} sn: {self.snippet.name}"
 
+    def likes_count(self):
+        return self.likes.filter(vote=LikeDislike.LIKE).count()
+
+    def dislikes_count(self):
+        return self.likes.filter(vote=LikeDislike.DISLIKE).count()
+
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
@@ -93,7 +105,7 @@ class Notification(models.Model):
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
     title = models.CharField(max_length=255)
-    comment   = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True)
+    comment = models.ForeignKey(Comment, on_delete=models.SET_NULL, null=True)
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
