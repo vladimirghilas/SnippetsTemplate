@@ -1,0 +1,29 @@
+   main > .container {
+                padding: 60px 15px 0;
+            }
+
+            .footer {
+                background-color: #f5f5f5;
+            }
+
+            .footer > .container {
+                padding-right: 15px;
+                padding-left: 15px;
+            }
+
+            .alerts-fixed-container {
+                position: fixed; /* Фиксирует контейнер относительно окна просмотра */
+                top: 20px; /* Отступ сверху */
+                right: -100px;
+                transform: translateX(-50%); /* Точное центрирование */
+                z-index: 1080;
+                width: 100%;
+                max-width: 500px; /* Ограничим ширину сообщений для лучшего внешнего вида */
+                padding: 0 15px; /* Небольшие отступы по бокам */
+                pointer-events: none; /* Позволяет кликать сквозь контейнер, если нет сообщений */
+            }
+
+            .alerts-fixed-container .alert {
+                pointer-events: auto; /* Возвращает кликабельность для самих алертов */
+                margin-bottom: 15px; /* Отступ между сообщениями */
+            }

@@ -306,7 +306,7 @@ def user_notifications(request,id=None):
 
     read_count = Notification.objects.filter(recipient=request.user, is_read=True)
 
-    # notif_coment_snipet = Notification.objects.filter(
+    # notif_comment_snipet = Notification.objects.filter(
     #     recipient=request.user,
     #     comment__snippet_id=snippet_id
     # ).select_related('comment', 'comment__snippet')
@@ -316,7 +316,7 @@ def user_notifications(request,id=None):
         'notifications': notifications,
         'unread_count': unread_count,
         'read_count': read_count,
-        # 'notif_coment_snipet': notif_coment_snipet,
+        # 'notif_comment_snipet': notif_comment_snipet,
     }
     return render(request, 'pages/notifications.html', context)
 
@@ -488,6 +488,8 @@ def add_snippet_like(request):
         defaults={'vote': vote}
     )
     snippet = Snippet.objects.get(id=snippet_id)
+    send_notification = False
+
     if not created:
         if existing_vote.vote == vote:
             existing_vote.delete()
@@ -495,7 +497,14 @@ def add_snippet_like(request):
             existing_vote.vote = vote
             existing_vote.save()
 
-    if vote == 1 and snippet.user != request.user:
+            if vote == LikeDislike.LIKE:
+                send_notification = True
+    else:
+        # Dacă e creat nou și e LIKE
+        if vote == LikeDislike.LIKE:
+            send_notification = True
+
+    if send_notification and snippet.user != request.user:
         Notification.objects.create(
             recipient = snippet.user,
             notification_type = ('like'),
