@@ -1,4 +1,6 @@
 import logging
+from idlelib.autocomplete import FILES
+from operator import attrgetter
 
 from django.contrib.contenttypes.models import ContentType
 from django.http import Http404, HttpResponseForbidden
@@ -6,7 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import is_valid_path
 from MainApp.models import Snippet, Comment, LANG_CHOICES, Tag, Notification, LikeDislike
-from MainApp.forms import SnippetForm, UserRegistrationForm, CommentForm
+from MainApp.forms import SnippetForm, UserRegistrationForm, CommentForm, UserProfileForm, UserEditForm
 from django.db.models import F, Q, Count, Avg
 from MainApp.models import LANG_ICONS
 from django.contrib import auth
@@ -20,6 +22,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 import json
 from datetime import datetime
+from itertools import chain
+from operator import attrgetter
 
 logger = logging.getLogger(__name__)
 
@@ -146,6 +150,7 @@ def snippet_detail(request, snippet_id):
         'available_tags': available_tags,
         'comments': page_obj,
         'comment_form': comment_form,
+        'author': snippet.user,  # autorul snippet-ului
     }
     return render(request, 'pages/snippet_detail.html', context)
 
@@ -292,6 +297,7 @@ def snippets_by_tag(request, tag_id):
 
 @login_required
 def user_notifications(request,id=None):
+    # tab = request.GET.get('tab', 'notification')
     """Страница с уведомлениями пользователя"""
     # Отмечаем 1 уведомление как прочитанные
     if id:
@@ -316,6 +322,7 @@ def user_notifications(request,id=None):
         'notifications': notifications,
         'unread_count': unread_count,
         'read_count': read_count,
+        # 'tab': tab
         # 'notif_comment_snipet': notif_comment_snipet,
     }
     return render(request, 'pages/notifications.html', context)
@@ -441,6 +448,8 @@ def is_authenticated(request):
     else:
         return JsonResponse({'is_authenticated': False})
 
+
+
 @require_POST
 @login_required
 def add_comment_like(request):
@@ -519,31 +528,98 @@ def add_snippet_like(request):
         'dislikes_count': snippet.dislikes_count(),
     })
 
+def user_profile(request, username):
+    """
+    Страница профиля для любого пользователя.
+    - Если смотришь свой профиль → показывается история действий (сниппеты + комментарии).
+    - Если чужой профиль → только статистика и топ сниппеты.
+    """
+    tab = request.GET.get('tab', 'info')
+    profile_user = get_object_or_404(User, username=username)
 
-def user_profile(request):
-    context = {
-        'profile_user': request.user
-    }
-    return render(request, 'pages/user_profile.html', context)
+    # если у тебя есть отдельная модель Profile
+    profile = getattr(profile_user, "profile", None)
 
-def user_statistics(request):
-    user_snippets = Snippet.objects.filter(user=request.user)
+    # 🔹 История только для владельца профиля
+    if request.user.is_authenticated and request.user == profile_user:
+        user_snippets = Snippet.objects.filter(user=request.user)
+        user_comments = Comment.objects.filter(author=request.user)
 
-    total_snippets = user_snippets.count()
+        # Сниппеты в унифицированный формат
+        snippet_actions = [
+            {
+                "url": f"/snippet/{s.id}",
+                "title": f"📄 Сниппет: {s.name}",
+                "creation_date": s.creation_date,
+                "extra": f"{s.views_count} просмотров",
+            }
+            for s in user_snippets
+        ]
 
-    if total_snippets > 0:
-        average_views = user_snippets.aggregate(avg_views=Avg('views'))['avg_views']
+        # Комментарии в унифицированный формат
+        comment_actions = [
+            {
+                "url": f"/snippet/{c.snippet.id}",
+                "title": f"💬 Комментарий к {c.snippet.name}",
+                "creation_date": c.creation_date,
+                "extra": c.text[:100],
+            }
+            for c in user_comments
+        ]
 
+        # Объединяем и сортируем по дате
+        recent_actions = sorted(
+            chain(snippet_actions, comment_actions),
+            key=lambda obj: obj["creation_date"],
+            reverse=True,
+        )[:20]
     else:
-        average_views = 0
+        recent_actions = []  # для чужих профилей историю не показываем
 
-    top_snippets = user_snippets.order_by('-views')[:5]
+    # 🔹 Общая статистика по пользователю
+    total_snippets = Snippet.objects.filter(user=profile_user).count()
+    average_views = round(
+        Snippet.objects.filter(user=profile_user).aggregate(avg_views=Avg("views_count"))["avg_views"] or 0,
+        1,
+    )
+    top_snippets = Snippet.objects.filter(user=profile_user).order_by("-views_count")[:5]
 
     context = {
-        'username': request.user.username,  # <--- aici denumirea utilizatorului
-        'total_snippets': total_snippets,
-        'average_views': average_views,
-        'top_snippets': top_snippets,
+        "tab": tab,
+        "profile": profile,
+        "profile_user": profile_user,
+        "total_snippets": total_snippets,
+        "average_views": average_views,
+        "top_snippets": top_snippets,
+        "recent_actions": recent_actions,
     }
 
-    return render(request, 'statistics.html', context)
+    return render(request, "pages/user_profile.html", context)
+
+def edit_profile(request):
+
+    if request.method == 'POST':
+        user_profile = UserProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        user_form = UserEditForm(request.POST, request.FILES, instance=request.user)
+        if user_form.is_valid() and user_profile.is_valid():
+            user_form.save()
+            user_profile.save()
+            messages.success(request, "Профиль успешно обновлен!")
+            return redirect('profile')  # перенаправляем на страницу профиля
+    else:
+        user_profile = UserProfileForm(instance=request.user.profile)
+        user_form = UserEditForm(instance=request.user)
+
+        context = {
+            'pagename': 'Редактирование профиля',
+            'user_form': user_form,
+            'user_profile': user_profile,
+        }
+
+    # Возвращаем шаблон с формой для GET-запроса или если форма невалидна
+    return render(request, 'pages/edit_profile.html', context)
+
+def my_profile(request):
+    if not request.user.is_authenticated:
+        return redirect('login')  # sau pagina de login
+    return redirect('user_profile', username=request.user.username)

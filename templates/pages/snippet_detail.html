@@ -9,6 +9,13 @@
     <div class="container">
         <div class="row">
             <div class="col">
+                <h1>{{ snippet.name }}</h1>
+                <p>Автор:
+                    <a href="{% url 'user_profile' snippet.user.username %}" class="btn btn-sm btn-primary">
+                        {{ snippet.user.username }}
+                    </a>
+                </p>
+
                 <!-- Acestea sunt doar afișări, deci rămân în fieldset -->
                 <fieldset disabled>
                     <div class="row mb-4">
@@ -103,6 +110,9 @@
             <li>
                 <div>
                     <h5 class="mb-1">{{ comment.author.username }}</h5>
+                                        <a href="{% url 'user_profile' comment.author.username %}">
+                                            Профиль ({{ comment.author.username }})
+                                        </a>
                     <small class="text-muted">{{ comment.creation_date | date:"j E Y г. в H:i" }}</small>
                 </div>
                 <p class="mb-1">

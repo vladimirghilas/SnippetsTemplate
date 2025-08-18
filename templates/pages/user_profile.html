@@ -1,455 +1,284 @@
 {% extends 'base.html' %}
 {% load static %}
 
-<html lang="ru" class="h-100">
+{% block style %}
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
+          crossorigin="anonymous">
+    <!-- Fontawessome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="{% static 'css/main_profile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>PythonBin</title>
-
-    {% block style %}
-        <!-- Bootstrap core CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
-              integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
-              crossorigin="anonymous">
-        <!-- Fontawessome -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-        <!-- Custom styles for this template -->
-        <link rel="stylesheet" href="{% static 'css/main_profile.css' %}">
-        <link rel="stylesheet" href="{% static 'css/profile.css' %}">
-    {% endblock %}
-</head>
-
-<body class="d-flex flex-column h-100">
 <!-- Begin page content -->
-<main role="main" class="mt-3 flex-shrink-0">
-    <div id="isAuth" hidden="hidden">True</div>
-    <div class="alerts-fixed-container" id="alertsFixedContainer">
+{% block content %}
+    <main role="main" class="mt-3 flex-shrink-0">
+        <div id="isAuth" hidden="hidden">True</div>
+        <div class="alerts-fixed-container" id="alertsFixedContainer">
 
-    </div>
-    {% block content %}
+        </div>
         <div class="container">
             <div class="row">
-                <div class="col">
-                    <div class="profile-header">
-                        <div class="row align-items-center">
-                            <div class="col-md-3 text-center">
-                                <div class="profile-avatar">
-{#                                    <img alt="Аватар" class="avatar-image">#}
-                                    <img src="{% static 'images/default-avatar.png' %}" class="avatar-image"
-                                         alt="Avatar">
-                                    <div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h1>@{{ user.username }}</h1>
-                                        <p class="mb-2">Дата регистрации: 08.07.2025</p>
-                                    </div>
-                                    <div class="col-md-6 d-flex justify-content-end">
-                                        <a href="{#}"
+                <div class="profile-header">
+                    <div class="row align-items-center">
+                        <!-- Левая колонка: аватар -->
+                        <div class="col-md-3 text-center">
+                            <div class="profile-avatar">
+                                <img src="{% static 'images/default-avatar.png' %}" class="avatar-image" alt="Аватар">
+                            </div>
+                        </div>
+
+                        <!-- Правая колонка: инфо + кнопка -->
+                        <div class="col-md-9">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <h1>@{{ profile_user.username }}</h1>
+                                    <p class="mb-2">Дата регистрации: 08.07.2025</p>
+                                </div>
+                                <div class="col-md-6 d-flex justify-content-end">
+                                    {% if request.user == profile_user %}
+                                        <a href="{% url 'edit_profile' %}"
                                            class="btn btn-outline-primary edit-profile-btn">
                                             <i class="fas fa-edit"></i> Редактировать
                                         </a>
-                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <ul class="nav nav-tabs" id="profileTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info"
-                                    type="button"
-                                    role="tab">
-                                <i class="fas fa-user"></i> Информация
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats"
-                                    type="button"
-                                    role="tab">
-                                <i class="fas fa-chart-bar"></i> Статистика
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history"
-                                    type="button"
-                                    role="tab">
-                                <i class="fas fa-history"></i> История
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="profileTabContent">
-                        <!-- Вкладка Информация -->
-                        <div class="tab-pane fade show active" id="info" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h4>Основная информация</h4>
-                                    <table class="table">
-                                        <tr>
-                                            <td><strong>Имя пользователя:</strong></td>
-                                            <td>{{ user.username }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Имя:</strong></td>
-                                            <td>{{ user.last_name|default:"Не указано"}}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Фамилия:</strong></td>
-                                            <td>{{ user.first_name|default:"Не указано" }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Email:</strong></td>
-                                            <td>{{ user.email }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Дата регистрации:</strong></td>
-                                            <td>{{ user.date_joined|date:"d M Y, H:i" }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Последний вход:</strong></td>
-                                            <td>{{ user.last_login|date:"d M Y, H:i" }}</td>
-                                        </tr>
-                                    </table>
-                                </div>
-                                <div class="col-md-6">
-                                    <h4>Дополнительная информация</h4>
-
-                                    <p><strong>О себе:</strong><br>Чудесный человек</p>
-
-
-                                    <p><strong>Веб-сайт:</strong><br>
-                                        <a href="" target="_blank">https://example.com</a>
-                                    </p>
-
-
-                                    <p><strong>Смена пароля:</strong><br>
-                                        <a href="/password/change/" class="btn btn-warning btn-sm">
-                                            <i class="fas fa-key"></i> Изменить пароль
-                                        </a>
-                                    </p>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Вкладка Статистика -->
-                        <div class="tab-pane fade" id="stats" role="tabpanel">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h4>Общая статистика</h4>
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="row text-center">
-                                                <div class="col-6">
-                                                    <h3 class="text-primary">17</h3>
-                                                    <p>Всего сниппетов</p>
-                                                </div>
-                                                <div class="col-6">
-                                                    <h3 class="text-success">45.4</h3>
-                                                    <p>Сред. просмотров</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <h4>Топ сниппетов по просмотрам</h4>
-
-
-                                    <div class="snippet-card">
-                                        <h6><a href="/snippet/1">Python: Hello World</a></h6>
-                                        <p class="mb-1">
-                                            <span class="badge bg-primary">python</span>
-                                            <span class="text-muted">30.06.2025</span>
-                                        </p>
-                                        <p class="mb-0">
-                                            <i class="fas fa-eye"></i> 140 просмотров
-                                        </p>
-                                    </div>
-
-                                    <div class="snippet-card">
-                                        <h6><a href="/snippet/4">Python: File Reading</a></h6>
-                                        <p class="mb-1">
-                                            <span class="badge bg-primary">python</span>
-                                            <span class="text-muted">30.06.2025</span>
-                                        </p>
-                                        <p class="mb-0">
-                                            <i class="fas fa-eye"></i> 101 просмотров
-                                        </p>
-                                    </div>
-
-                                    <div class="snippet-card">
-                                        <h6><a href="/snippet/9">Python: Decorator Example</a></h6>
-                                        <p class="mb-1">
-                                            <span class="badge bg-primary">python</span>
-                                            <span class="text-muted">30.06.2025</span>
-                                        </p>
-                                        <p class="mb-0">
-                                            <i class="fas fa-eye"></i> 93 просмотров
-                                        </p>
-                                    </div>
-
-                                    <div class="snippet-card">
-                                        <h6><a href="/snippet/2">Python: List Comprehension</a></h6>
-                                        <p class="mb-1">
-                                            <span class="badge bg-primary">python</span>
-                                            <span class="text-muted">30.06.2025</span>
-                                        </p>
-                                        <p class="mb-0">
-                                            <i class="fas fa-eye"></i> 81 просмотров
-                                        </p>
-                                    </div>
-
-                                    <div class="snippet-card">
-                                        <h6><a href="/snippet/5">Python: Function with Args</a></h6>
-                                        <p class="mb-1">
-                                            <span class="badge bg-primary">python</span>
-                                            <span class="text-muted">30.06.2025</span>
-                                        </p>
-                                        <p class="mb-0">
-                                            <i class="fas fa-eye"></i> 75 просмотров
-                                        </p>
-                                    </div>
-
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Вкладка История -->
-                        <div class="tab-pane fade" id="history" role="tabpanel">
-                            <h4>История действий</h4>
-
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Прокомментировал сниппет &quot;C++: Function Example&quot;</p>
-                                        <small class="action-date">08.08.2025 09:35</small>
-                                    </div>
-
-                                    <span class="badge bg-info">Комментарий</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Прокомментировал сниппет &quot;C++: Console Output&quot;</p>
-                                        <small class="action-date">08.08.2025 08:09</small>
-                                    </div>
-
-                                    <span class="badge bg-info">Комментарий</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Прокомментировал сниппет &quot;C++: Basic Loop&quot;</p>
-                                        <small class="action-date">08.08.2025 08:09</small>
-                                    </div>
-
-                                    <span class="badge bg-info">Комментарий</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;demo snippet&quot;</p>
-                                        <small class="action-date">10.07.2025 16:45</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Тестовое название&quot;</p>
-                                        <small class="action-date">10.07.2025 16:44</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Test snippet&quot;</p>
-                                        <small class="action-date">10.07.2025 16:32</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Прокомментировал сниппет &quot;Python: Decorator
-                                            Example&quot;</p>
-                                        <small class="action-date">01.07.2025 10:30</small>
-                                    </div>
-
-                                    <span class="badge bg-info">Комментарий</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Прокомментировал сниппет &quot;Python: Exception
-                                            Handling&quot;</p>
-                                        <small class="action-date">01.07.2025 10:05</small>
-                                    </div>
-
-                                    <span class="badge bg-info">Комментарий</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Прокомментировал сниппет &quot;Python: Function with
-                                            Args&quot;</p>
-                                        <small class="action-date">01.07.2025 09:45</small>
-                                    </div>
-
-                                    <span class="badge bg-info">Комментарий</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Прокомментировал сниппет &quot;Python: List
-                                            Comprehension&quot;</p>
-                                        <small class="action-date">01.07.2025 09:15</small>
-                                    </div>
-
-                                    <span class="badge bg-info">Комментарий</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Прокомментировал сниппет &quot;Python: Hello World&quot;</p>
-                                        <small class="action-date">01.07.2025 09:00</small>
-                                    </div>
-
-                                    <span class="badge bg-info">Комментарий</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Python: Testing Utility&quot;</p>
-                                        <small class="action-date">30.06.2025 11:10</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Python: Configuration Settings&quot;</p>
-                                        <small class="action-date">30.06.2025 11:05</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Python: Internal Data Processing&quot;</p>
-                                        <small class="action-date">30.06.2025 11:00</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Python: Secret Key Generator&quot;</p>
-                                        <small class="action-date">30.06.2025 10:55</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Python: Private Function&quot;</p>
-                                        <small class="action-date">30.06.2025 10:50</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Python: Regular Expression&quot;</p>
-                                        <small class="action-date">30.06.2025 10:45</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-                            <div class="action-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <p class="mb-1">Создал сниппет &quot;Python: Decorator Example&quot;</p>
-                                        <small class="action-date">30.06.2025 10:40</small>
-                                    </div>
-
-                                    <span class="badge bg-success">Сниппет</span>
-
-                                </div>
-                            </div>
-
-
                         </div>
                     </div>
                 </div>
 
-        </main>
-    {% endblock %}
+                <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if tab == "info" %} active {% endif %}" id="info-tab"
+                                data-bs-toggle="tab" data-bs-target="#info"
+                                type="button" role="tab">
+                            <i class="fas fa-user"></i> Информация
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {% if tab == "stats" %} active {% endif %}" id="stats-tab"
+                                data-bs-toggle="tab" data-bs-target="#stats"
+                                type="button" role="tab">
+                            <i class="fas fa-chart-bar"></i> Статистика
+                        </button>
+                    </li>
+
+                    {% if request.user == profile_user %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if tab == "history" %} active {% endif %}" id="history-tab"
+                                    data-bs-toggle="tab" data-bs-target="#history"
+                                    type="button" role="tab">
+                                <i class="fas fa-history"></i> История
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if tab == "notification" %} {% endif %}" id="history-tab"
+                                    data-bs-toggle="tab" data-bs-target="#notification"
+                                    type="button" role="tab">
+                                <i class="fas fa-history"></i> Уведомления
+                            </button>
+                        </li>
+                    {% endif %}
+                </ul>
+
+                <div class="tab-content" id="profileTabContent">
+                    <!-- Вкладка Информация -->
+                    <div class="tab-pane fade {% if tab == "info" %} show active {% endif %}" id="info" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Основная информация</h4>
+                                <table class="table">
+                                    <tr>
+                                        <td><strong>Имя пользователя:</strong></td>
+                                        <td>{{ profile_user.username }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Имя:</strong></td>
+                                        <td>{{ profile_user.last_name|default:"Не указано"}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Фамилия:</strong></td>
+                                        <td>{{ profile_user.first_name|default:"Не указано" }}</td>
+                                    </tr>
+                                    {% if request.user == profile_user %}
+                                        <tr>
+                                            <td><strong>Email:</strong></td>
+                                            <td>{{ user.email }}</td>
+                                        </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td><strong>Дата регистрации:</strong></td>
+                                        <td>{{ profile_user.date_joined|date:"d M Y, H:i" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Последний вход:</strong></td>
+                                        <td>{{ profile_user.last_login|date:"d M Y, H:i" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Дополнительная информация</h4>
+
+                                <p><strong>О себе:</strong><br>{{ profile.bio }}</p>
+
+
+                                <p><strong>Веб-сайт:</strong><br>
+                                    {% if user.profile.website %}
+                                        <a href="{{ profile_user.profile.website }}"
+                                           target="_blank">{{ profile_user.profile.website }}</a>
+                                    {% else %}
+                                        <span>не указан</span>
+                                    {% endif %}
+                                <p>
+                                    {% if request.user == profile_user %}
+                                        <a href="{% url 'password_change' %}" class="btn btn-warning">
+                                            Сменить пароль
+                                        </a>
+                                    {% endif %}
+                                </p>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Вкладка Статистика -->
+                    <div class="tab-pane fade {% if tab == "stats" %} show active {% endif %}" id="stats"
+                         role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Общая статистика</h4>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="row text-center">
+                                            <div class="col-6">
+                                                <h3 class="text-primary">{{ total_snippets }}</h3>
+                                                <p>Всего сниппетов</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <h3 class="text-success">{{ average_views }}</h3>
+                                                <p>Сред. просмотров</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Топ сниппетов по просмотрам</h4>
+
+                                {% for snippet in top_snippets %}
+                                    <div class="snippet-card">
+                                        <h6>
+                                            <a href="/snippet/{{ snippet.id }}">{{ snippet.lang }}: {{ snippet.name }}</a>
+                                        </h6>
+                                        <p class="mb-1">
+                                            <span class="badge bg-primary">{{ snippet.lang }}</span>
+                                            <span class="text-muted">{{ snippet.creation_date|date:"d.m.Y" }}</span>
+                                        </p>
+                                        <p class="mb-0">
+                                            <i class="fas fa-eye"></i> {{ snippet.views_count }} просмотров
+                                        </p>
+                                    </div>
+                                {% endfor %}
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Вкладка История -->
+                    <div class="tab-pane fade {% if tab == "history" %} show active {% endif %}" id="history"
+                         role="tabpanel">
+                        <h4>История действий</h4>
+                        <div class="actions-list">
+                            {% for action in recent_actions %}
+                                <div class="action-card mb-3 p-3 border rounded shadow-sm">
+                                    <h6><a href="{{ action.url }}">{{ action.title }}</a></h6>
+                                    <p class="text-muted mb-1">{{ action.creation_date }}</p>
+                                    <p class="mb-0">{{ action.extra }}</p>
+                                </div>
+                                {% empty %}
+                                <p>У вас пока нет действий.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <!-- Вкладка Уведомления -->
+                    <div class="tab-pane fade {% if tab == "notification" %} show active {% endif %}" id="notification"
+                         role="tabpanel">
+                        <div class="alerts-fixed-container" id="alertsFixedContainer"></div>
+
+                        <div class="container">
+                            <div class="row">
+                                <div class="d-flex align-items-center justify-content-between mb-4"
+                                     style="padding-left: 1rem;">
+                                    <div class="d-flex align-items-center">
+                                        <h1 class="mb-0 me-3" style="font-size: 2rem;">{{ pagename }}</h1>
+                                        {% if unread_count > 0 %}
+                                            <span class="badge bg-success" style="font-size: 1.2rem;">NEW</span>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{% url 'delete_read_notifications' %}"
+                                       class="badge bg-success text-decoration-none"
+                                       style="font-size: 1rem;">
+                                        Удалить все просмотренные
+                                    </a>
+
+                                </div>
+                                {% if notifications %}
+                                    <div class="row">
+                                        {% for notif in notifications %}
+                                            <div class="col-12 mb-3">
+                                                <div class="card ">
+                                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h5 class="mb-0">
+                                                                {% if notif.notification_type == "comment" %}
+                                                                    <i class="fas fa-comment text-primary"></i>
+                                                                {% else %}
+                                                                    <i class="fas fa-bell text-info"></i>
+                                                                {% endif %}
+                                                                {{ notif.title }}
+                                                                {% if not notif.is_read %}
+                                                                    <span class="badge bg-success ms-2">NEW</span>
+                                                                {% endif %}
+                                                            </h5>
+                                                        </div>
+                                                        <div>
+                                                            <small class="text-muted">
+                                                                {{ notif.created_at|date:"j E Y г. в H:i" }}</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="card-text">{{ notif.message }}</p>
+                                                        {% if notif.comment or notif.notification_type %}
+                                                            <a href="{% url 'mark_notification' notif.id %}"
+                                                               class="btn btn-sm btn-outline-primary">
+                                                                Перейти к сниппету
+                                                            </a>
+                                                            <a href="{% url 'delete_notification' notif.id %}"
+                                                               class="btn btn-sm btn-outline-primary float-end">
+                                                                Удалить уведомление
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+{% endblock %}
 
 <!-- Optional JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"

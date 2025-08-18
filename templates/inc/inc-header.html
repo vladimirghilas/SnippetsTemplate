@@ -49,16 +49,18 @@
                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-user"></i> {{ request.user.username }}
                             </a>
-                            <div class="dropdown-menu dropdown-menu-end" style="min-width: 200px;">
-                                <a class="dbtn btn-outline-primary" href="{% url 'profile' %}">
+                            <div class="dropdown-menu dropdown-menu-end p-2" style="min-width: 220px;">
+                                <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'profile' %}">
                                     <i class="fas fa-user-circle"></i> Мой профиль
                                 </a>
-                                <a class="dbtn btn-outline-primary" href="{% url 'snippets-my' %}">
+                                <a class="dropdown-item d-flex align-items-center gap-2"
+                                   href="{% url 'edit_profile' %}">
                                     <i class="fas fa-edit"></i> Редактировать профиль
                                 </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">
-                                    <a href="{% url 'logout' %}">Выйти</a>
+                                <a class="dropdown-item d-flex align-items-center gap-2 text-danger"
+                                   href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt"></i> Выйти
                                 </a>
                             </div>
                         </li>
