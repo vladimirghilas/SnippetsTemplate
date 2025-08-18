@@ -13,7 +13,7 @@
                 <ul class="navbar-nav ms-auto mb-2 mb-md-0">
                     {% if request.user.is_authenticated %}
                         <li class="ps-3">
-                            <a class="btn btn-outline-warning" href="{% url 'notifications' %}">
+                            <a class="btn btn-outline-warning" href="{% url 'user_profile' username=request.user.username %}?tab=notifications">
                                 <i class="fas fa-bell"></i> Уведомления
                                 <span id="notification-count" class="badge bg-danger ms-1">0</span>
                             </a>

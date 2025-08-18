@@ -296,37 +296,37 @@ def snippets_by_tag(request, tag_id):
 
 
 @login_required
-def user_notifications(request,id=None):
-    # tab = request.GET.get('tab', 'notification')
-    """Страница с уведомлениями пользователя"""
-    # Отмечаем 1 уведомление как прочитанные
-    if id:
-        notif = Notification.objects.get(recipient=request.user, id=id)
-        notif.is_read = True
-        notif.save()
-        return redirect('snippet-detail', snippet_id=notif.comment.snippet.id)
+def user_notifications(request, id=None):
+    notif_id = id or request.GET.get('id')
 
-    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    if notif_id:
+        try:
+            notif = Notification.objects.get(recipient=request.user, id=int(notif_id))
+            notif.is_read = True
+            notif.save()
+        except Notification.DoesNotExist:
+            notif = None
+
+        snippet_id = None
+        if notif:
+            if notif.comment:
+                snippet_id = notif.comment.snippet.id
+            elif notif.snippet:
+                snippet_id = notif.snippet.id
+
+        if snippet_id:
+            return redirect('snippet-detail', snippet_id=snippet_id)
+
+def get_user_notification(user):
+    unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
     # Получаем все уведомления для авторизованного пользователя, сортируем по дате создания
-    notifications = list(Notification.objects.filter(recipient=request.user).select_related('comment__snippet'))
-
-    read_count = Notification.objects.filter(recipient=request.user, is_read=True)
-
-    # notif_comment_snipet = Notification.objects.filter(
-    #     recipient=request.user,
-    #     comment__snippet_id=snippet_id
-    # ).select_related('comment', 'comment__snippet')
-
-    context = {
-        'pagename': 'Мои уведомления',
+    notifications = list(Notification.objects.filter(recipient=user).select_related('comment__snippet'))
+    read_count = Notification.objects.filter(recipient=user, is_read=True)
+    return {
         'notifications': notifications,
         'unread_count': unread_count,
         'read_count': read_count,
-        # 'tab': tab
-        # 'notif_comment_snipet': notif_comment_snipet,
     }
-    return render(request, 'pages/notifications.html', context)
-
 
 @login_required
 def unread_notifications_count(request):
@@ -376,11 +376,12 @@ def notifications_delete(request, id=None):
     if id:
         notification = get_object_or_404(Notification, id=id, recipient=request.user)
         notification.delete()
+        print(f"Deleted notification {id}")
     else:
-        Notification.objects.filter(recipient=request.user, is_read=True).delete()
+        deleted_count, _ = Notification.objects.filter(recipient=request.user, is_read=True).delete()
+        print(f"Deleted {deleted_count} read notifications")
 
-    return redirect('notifications')
-
+    return redirect('user_profile', username=request.user.username)
 
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
@@ -453,32 +454,36 @@ def is_authenticated(request):
 @require_POST
 @login_required
 def add_comment_like(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        comment_id = data.get('comment_id')
-        vote = data.get('vote')
+    data = json.loads(request.body)
+    comment_id = data.get('comment_id')
+    vote = data.get('vote')
 
-        existing_vote, created = LikeDislike.objects.get_or_create(
-            user = request.user,
-            content_type=ContentType.objects.get_for_model(Comment),
-            object_id = comment_id,
-            defaults={'vote':vote}
-        )
-        if not created:
-            if existing_vote.vote == vote:
-                existing_vote.delete()
-            else:
-                existing_vote = vote
-                existing_vote.save()
+    comment = get_object_or_404(Comment, id=comment_id)
 
-        comment=Comment.objects.get(id=comment_id)
-        responce_data = {
-            "success": True,
-            "likes_count": comment.likes_count(),
-            "dislikes_count": comment.dislikes_count(),
-        }
+    content_type = ContentType.objects.get_for_model(Comment)
+    existing_vote, created = LikeDislike.objects.get_or_create(
+        user=request.user,
+        content_type=content_type,
+        object_id=comment_id,
+        defaults={'vote': vote}
+    )
 
-        return JsonResponse(responce_data)
+    if not created:
+        if existing_vote.vote == vote:
+            # Dacă utilizatorul apasă din nou același vot, îl ștergem
+            existing_vote.delete()
+        else:
+            # Dacă votează diferit, actualizăm votul
+            existing_vote.vote = vote
+            existing_vote.save()
+
+    response_data = {
+        "success": True,
+        "likes_count": comment.likes_count(),
+        "dislikes_count": comment.dislikes_count(),
+    }
+
+    return JsonResponse(response_data)
 
 @require_POST
 @login_required
@@ -519,6 +524,7 @@ def add_snippet_like(request):
             notification_type = ('like'),
             title=f"{request.user.username} поставил лайк вашему сниппету",
             comment=None,
+            snippet=snippet,
             message=f"Пользователь {request.user.username} поставил лайк вашему сниппету: {snippet.name}"
         )
 
@@ -529,18 +535,12 @@ def add_snippet_like(request):
     })
 
 def user_profile(request, username):
-    """
-    Страница профиля для любого пользователя.
-    - Если смотришь свой профиль → показывается история действий (сниппеты + комментарии).
-    - Если чужой профиль → только статистика и топ сниппеты.
-    """
-    tab = request.GET.get('tab', 'info')
+    tab = request.GET.get("tab", "profile")
     profile_user = get_object_or_404(User, username=username)
 
     # если у тебя есть отдельная модель Profile
     profile = getattr(profile_user, "profile", None)
-
-    # 🔹 История только для владельца профиля
+    #  История только для владельца профиля
     if request.user.is_authenticated and request.user == profile_user:
         user_snippets = Snippet.objects.filter(user=request.user)
         user_comments = Comment.objects.filter(author=request.user)
@@ -549,7 +549,7 @@ def user_profile(request, username):
         snippet_actions = [
             {
                 "url": f"/snippet/{s.id}",
-                "title": f"📄 Сниппет: {s.name}",
+                "title": f" Сниппет: {s.name}",
                 "creation_date": s.creation_date,
                 "extra": f"{s.views_count} просмотров",
             }
@@ -560,7 +560,7 @@ def user_profile(request, username):
         comment_actions = [
             {
                 "url": f"/snippet/{c.snippet.id}",
-                "title": f"💬 Комментарий к {c.snippet.name}",
+                "title": f" Комментарий к {c.snippet.name}",
                 "creation_date": c.creation_date,
                 "extra": c.text[:100],
             }
@@ -576,13 +576,18 @@ def user_profile(request, username):
     else:
         recent_actions = []  # для чужих профилей историю не показываем
 
-    # 🔹 Общая статистика по пользователю
+    # Общая статистика по пользователю
     total_snippets = Snippet.objects.filter(user=profile_user).count()
     average_views = round(
         Snippet.objects.filter(user=profile_user).aggregate(avg_views=Avg("views_count"))["avg_views"] or 0,
         1,
     )
     top_snippets = Snippet.objects.filter(user=profile_user).order_by("-views_count")[:5]
+
+    if tab == "notifications" and request.user.is_authenticated and request.user == profile_user:
+        notifications_context = get_user_notification(request.user)
+    else:
+        notifications_context = {"notifications": [], "unread_count": 0, "read_count": []}
 
     context = {
         "tab": tab,
@@ -592,6 +597,7 @@ def user_profile(request, username):
         "average_views": average_views,
         "top_snippets": top_snippets,
         "recent_actions": recent_actions,
+        **notifications_context,
     }
 
     return render(request, "pages/user_profile.html", context)

@@ -6,37 +6,32 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
           crossorigin="anonymous">
-    <!-- Fontawessome -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <!-- Custom styles for this template -->
+    <!-- Custom styles -->
     <link rel="stylesheet" href="{% static 'css/main_profile.css' %}">
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
 {% endblock %}
 
-<!-- Begin page content -->
 {% block content %}
     <main role="main" class="mt-3 flex-shrink-0">
         <div id="isAuth" hidden="hidden">True</div>
-        <div class="alerts-fixed-container" id="alertsFixedContainer">
+        <div class="alerts-fixed-container" id="alertsFixedContainerMain"></div>
 
-        </div>
         <div class="container">
             <div class="row">
                 <div class="profile-header">
                     <div class="row align-items-center">
-                        <!-- Левая колонка: аватар -->
                         <div class="col-md-3 text-center">
                             <div class="profile-avatar">
                                 <img src="{% static 'images/default-avatar.png' %}" class="avatar-image" alt="Аватар">
                             </div>
                         </div>
-
-                        <!-- Правая колонка: инфо + кнопка -->
                         <div class="col-md-9">
                             <div class="row align-items-center">
                                 <div class="col-md-6">
-                                    <h1>@{{ profile_user.username }}</h1>
-                                    <p class="mb-2">Дата регистрации: 08.07.2025</p>
+                                    <h1>{{ profile_user.username }}</h1>
+                                    <p class="mb-2">Дата регистрации: {{ profile_user.date_joined|date:"d.m.Y" }}</p>
                                 </div>
                                 <div class="col-md-6 d-flex justify-content-end">
                                     {% if request.user == profile_user %}
@@ -53,41 +48,37 @@
 
                 <ul class="nav nav-tabs" id="profileTabs" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link {% if tab == "info" %} active {% endif %}" id="info-tab"
-                                data-bs-toggle="tab" data-bs-target="#info"
-                                type="button" role="tab">
+                        <button class="nav-link {% if tab == 'info' %} active {% endif %}" id="info-tab"
+                                data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
                             <i class="fas fa-user"></i> Информация
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link {% if tab == "stats" %} active {% endif %}" id="stats-tab"
-                                data-bs-toggle="tab" data-bs-target="#stats"
-                                type="button" role="tab">
+                        <button class="nav-link {% if tab == 'stats' %} active {% endif %}" id="stats-tab"
+                                data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab">
                             <i class="fas fa-chart-bar"></i> Статистика
                         </button>
                     </li>
-
                     {% if request.user == profile_user %}
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if tab == "history" %} active {% endif %}" id="history-tab"
-                                    data-bs-toggle="tab" data-bs-target="#history"
-                                    type="button" role="tab">
+                            <button class="nav-link {% if tab == 'history' %} active {% endif %}" id="history-tab"
+                                    data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
                                 <i class="fas fa-history"></i> История
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if tab == "notification" %} {% endif %}" id="history-tab"
-                                    data-bs-toggle="tab" data-bs-target="#notification"
-                                    type="button" role="tab">
-                                <i class="fas fa-history"></i> Уведомления
+                            <button class="nav-link {% if tab == 'notifications' %} active {% endif %}"
+                                    id="notifications-tab"
+                                    data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab">
+                                <i class="fas fa-bell"></i> Уведомления
                             </button>
                         </li>
                     {% endif %}
                 </ul>
 
                 <div class="tab-content" id="profileTabContent">
-                    <!-- Вкладка Информация -->
-                    <div class="tab-pane fade {% if tab == "info" %} show active {% endif %}" id="info" role="tabpanel">
+                    <!-- Info Tab -->
+                    <div class="tab-pane fade {% if tab == 'info' %} show active {% endif %}" id="info" role="tabpanel">
                         <div class="row">
                             <div class="col-md-6">
                                 <h4>Основная информация</h4>
@@ -98,7 +89,7 @@
                                     </tr>
                                     <tr>
                                         <td><strong>Имя:</strong></td>
-                                        <td>{{ profile_user.last_name|default:"Не указано"}}</td>
+                                        <td>{{ profile_user.last_name|default:"Не указано" }}</td>
                                     </tr>
                                     <tr>
                                         <td><strong>Фамилия:</strong></td>
@@ -107,7 +98,7 @@
                                     {% if request.user == profile_user %}
                                         <tr>
                                             <td><strong>Email:</strong></td>
-                                            <td>{{ user.email }}</td>
+                                            <td>{{ profile_user.email }}</td>
                                         </tr>
                                     {% endif %}
                                     <tr>
@@ -122,31 +113,24 @@
                             </div>
                             <div class="col-md-6">
                                 <h4>Дополнительная информация</h4>
-
                                 <p><strong>О себе:</strong><br>{{ profile.bio }}</p>
-
-
                                 <p><strong>Веб-сайт:</strong><br>
-                                    {% if user.profile.website %}
+                                    {% if profile_user.profile.website %}
                                         <a href="{{ profile_user.profile.website }}"
                                            target="_blank">{{ profile_user.profile.website }}</a>
                                     {% else %}
                                         <span>не указан</span>
                                     {% endif %}
-                                <p>
-                                    {% if request.user == profile_user %}
-                                        <a href="{% url 'password_change' %}" class="btn btn-warning">
-                                            Сменить пароль
-                                        </a>
-                                    {% endif %}
                                 </p>
-
+                                {% if request.user == profile_user %}
+                                    <a href="{% url 'password_change' %}" class="btn btn-warning">Сменить пароль</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
 
-                    <!-- Вкладка Статистика -->
-                    <div class="tab-pane fade {% if tab == "stats" %} show active {% endif %}" id="stats"
+                    <!-- Stats Tab -->
+                    <div class="tab-pane fade {% if tab == 'stats' %} show active {% endif %}" id="stats"
                          role="tabpanel">
                         <div class="row">
                             <div class="col-md-6">
@@ -168,7 +152,6 @@
                             </div>
                             <div class="col-md-6">
                                 <h4>Топ сниппетов по просмотрам</h4>
-
                                 {% for snippet in top_snippets %}
                                     <div class="snippet-card">
                                         <h6>
@@ -178,111 +161,101 @@
                                             <span class="badge bg-primary">{{ snippet.lang }}</span>
                                             <span class="text-muted">{{ snippet.creation_date|date:"d.m.Y" }}</span>
                                         </p>
-                                        <p class="mb-0">
-                                            <i class="fas fa-eye"></i> {{ snippet.views_count }} просмотров
+                                        <p class="mb-0"><i class="fas fa-eye"></i> {{ snippet.views_count }} просмотров
                                         </p>
                                     </div>
                                 {% endfor %}
-
-
                             </div>
                         </div>
                     </div>
 
-                    <!-- Вкладка История -->
-                    <div class="tab-pane fade {% if tab == "history" %} show active {% endif %}" id="history"
-                         role="tabpanel">
-                        <h4>История действий</h4>
-                        <div class="actions-list">
-                            {% for action in recent_actions %}
-                                <div class="action-card mb-3 p-3 border rounded shadow-sm">
-                                    <h6><a href="{{ action.url }}">{{ action.title }}</a></h6>
-                                    <p class="text-muted mb-1">{{ action.creation_date }}</p>
-                                    <p class="mb-0">{{ action.extra }}</p>
-                                </div>
-                                {% empty %}
-                                <p>У вас пока нет действий.</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <!-- Вкладка Уведомления -->
-                    <div class="tab-pane fade {% if tab == "notification" %} show active {% endif %}" id="notification"
-                         role="tabpanel">
-                        <div class="alerts-fixed-container" id="alertsFixedContainer"></div>
-
-                        <div class="container">
-                            <div class="row">
-                                <div class="d-flex align-items-center justify-content-between mb-4"
-                                     style="padding-left: 1rem;">
-                                    <div class="d-flex align-items-center">
-                                        <h1 class="mb-0 me-3" style="font-size: 2rem;">{{ pagename }}</h1>
-                                        {% if unread_count > 0 %}
-                                            <span class="badge bg-success" style="font-size: 1.2rem;">NEW</span>
-                                        {% endif %}
+                    <!-- History Tab -->
+                    {% if request.user == profile_user %}
+                        <div class="tab-pane fade {% if tab == 'history' %} show active {% endif %}" id="history"
+                             role="tabpanel">
+                            <h4>История действий</h4>
+                            <div class="actions-list">
+                                {% for action in recent_actions %}
+                                    <div class="action-card mb-3 p-3 border rounded shadow-sm">
+                                        <h6><a href="{{ action.url }}">{{ action.title }}</a></h6>
+                                        <p class="text-muted mb-1">{{ action.creation_date }}</p>
+                                        <p class="mb-0">{{ action.extra }}</p>
                                     </div>
-                                    <a href="{% url 'delete_read_notifications' %}"
-                                       class="badge bg-success text-decoration-none"
-                                       style="font-size: 1rem;">
-                                        Удалить все просмотренные
-                                    </a>
+                                    {% empty %}
+                                    <p>У вас пока нет действий.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
 
-                                </div>
-                                {% if notifications %}
-                                    <div class="row">
-                                        {% for notif in notifications %}
-                                            <div class="col-12 mb-3">
-                                                <div class="card ">
-                                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <h5 class="mb-0">
-                                                                {% if notif.notification_type == "comment" %}
-                                                                    <i class="fas fa-comment text-primary"></i>
-                                                                {% else %}
-                                                                    <i class="fas fa-bell text-info"></i>
-                                                                {% endif %}
-                                                                {{ notif.title }}
-                                                                {% if not notif.is_read %}
-                                                                    <span class="badge bg-success ms-2">NEW</span>
-                                                                {% endif %}
-                                                            </h5>
+                        <!-- Notifications Tab -->
+                        <div class="tab-pane fade {% if tab == 'notifications' %} show active {% endif %}"
+                             id="notifications" role="tabpanel">
+                            <div class="alerts-fixed-container" id="alertsFixedContainerNotifications"></div>
+                            <div class="container">
+                                <div class="row">
+                                    <div class="d-flex align-items-center justify-content-between mb-4"
+                                         style="padding-left: 1rem;">
+                                        <div class="d-flex align-items-center">
+                                            <h1 class="mb-0 me-3" style="font-size: 2rem;">{{ pagename }}</h1>
+                                            {% if unread_count > 0 %}
+                                                <span class="badge bg-success" style="font-size: 1.2rem;">NEW</span>
+                                            {% endif %}
+                                        </div>
+                                        <a href="{% url 'delete_read_notifications' %}"
+                                           class="badge bg-success text-decoration-none" style="font-size: 1rem;">
+                                            Удалить все просмотренные
+                                        </a>
+                                    </div>
+                                    {% if notifications %}
+                                        <div class="row">
+                                            {% for notif in notifications %}
+                                                <div class="col-12 mb-3">
+                                                    <div class="card">
+                                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <h5 class="mb-0">
+                                                                    {% if notif.notification_type == "comment" %}
+                                                                        <i class="fas fa-comment text-primary"></i>
+                                                                    {% else %}
+                                                                        <i class="fas fa-bell text-info"></i>
+                                                                    {% endif %}
+                                                                    {{ notif.title }}
+                                                                    {% if not notif.is_read %}
+                                                                        <span class="badge bg-success ms-2">NEW</span>
+                                                                    {% endif %}
+                                                                </h5>
+                                                            </div>
+                                                            <div>
+                                                                <small class="text-muted">
+                                                                    {{ notif.created_at|date:"j E Y г. в H:i" }}</small>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <small class="text-muted">
-                                                                {{ notif.created_at|date:"j E Y г. в H:i" }}</small>
+                                                        <div class="card-body">
+                                                            <p class="card-text">{{ notif.message }}</p>
+                                                            {% if notif.comment or notif.notification_type %}
+                                                                <a href="{% url 'mark_notification' notif.id %}"
+                                                                   class="btn btn-sm btn-outline-primary">Перейти к
+                                                                    сниппету</a>
+                                                                <a href="{% url 'delete_notification' notif.id %}"
+                                                                   class="btn btn-sm btn-outline-primary float-end">Удалить
+                                                                    уведомление</a>
+                                                            {% endif %}
                                                         </div>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <p class="card-text">{{ notif.message }}</p>
-                                                        {% if notif.comment or notif.notification_type %}
-                                                            <a href="{% url 'mark_notification' notif.id %}"
-                                                               class="btn btn-sm btn-outline-primary">
-                                                                Перейти к сниппету
-                                                            </a>
-                                                            <a href="{% url 'delete_notification' notif.id %}"
-                                                               class="btn btn-sm btn-outline-primary float-end">
-                                                                Удалить уведомление
-                                                            </a>
-                                                        {% endif %}
                                                     </div>
                                                 </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                    </div>
-
+                    {% endif %}
                 </div>
             </div>
-        </div>
         </div>
     </main>
 {% endblock %}
 
-<!-- Optional JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeo5G+T6E0bPv+0XoT3oCmqN7EzvF0/tG7hu6pcS5y3zvZgq"
         crossorigin="anonymous"></script>
-</body>
-</html>
