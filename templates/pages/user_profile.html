@@ -67,11 +67,12 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link {% if tab == 'notifications' %} active {% endif %}"
-                                    id="notifications-tab"
-                                    data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab">
+                            <a class="nav-link {% if tab == 'notifications' %} active {% endif %}"
+                               id="notifications-tab"
+                               href="{% url 'user_profile' username=request.user.username %}?tab=notifications"
+                               role="tab">
                                 <i class="fas fa-bell"></i> Уведомления
-                            </button>
+                            </a>
                         </li>
                     {% endif %}
                 </ul>
