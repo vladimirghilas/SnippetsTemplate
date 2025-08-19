@@ -11,14 +11,23 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav ms-auto mb-2 mb-md-0">
-                    {% if request.user.is_authenticated %}
+                    {% if request.user.is_authenticated and request.user.is_active %}
                         <li class="ps-3">
                             <a class="btn btn-outline-warning"
                                href="{% url 'user_profile' username=request.user.username %}?tab=notifications">
                                 <i class="fas fa-bell"></i> Уведомления
-                                <span id="notification-count" class="badge bg-danger ms-1">0</span>
+                                <span id="notification-count" class="badge bg-danger ms-1" data-polling="true">0</span>
                             </a>
                         </li>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const notificationCounter = document.getElementById('notification-count');
+                                if (notificationCounter && notificationCounter.dataset.polling === "true") {
+                                    console.log(" Start polling...");
+                                    startPolling(notificationCounter);
+                                }
+                            });
+                        </script>
                     {% endif %}
                     <li class="nav-item me-2">
                         <a class="btn btn-outline-success" href="{% url "snippets-stats" %}">
@@ -53,14 +62,14 @@
                             <div class="dropdown-menu dropdown-menu-end p-2" style="min-width: 220px;">
                                 <!-- Buton notificări -->
                                 <a class="btn btn-outline-primary w-100 mb-2 d-flex justify-content-between align-items-center"
-                                   href="{% url 'user_profile' username=request.user.username %}?tab=notifications">
+                                   href="{% url 'user_profile' username=request.user.username %}?tab=info">
                                      <span>
                                         <i class="fas fa-edit me-1"></i> Мой профиль
                                      </span>
                                     <span id="notification-count" class="badge bg-danger ms-2"></span>
                                 </a>
 
-                                <!-- Editare profil -->
+
                                 <a class="dropdown-item d-flex align-items-center gap-2"
                                    href="{% url 'edit_profile' %}">
                                     <i class="fas fa-edit"></i> Редактировать профиль
@@ -105,6 +114,12 @@
                                     <button type="submit" class="btn btn-primary btn-block">Войти</button>
                                 </form>
                                 <div class="dropdown-divider"></div>
+                                <div class="px-3 py-2">
+                                    <small class="text-muted">
+                                        Не получили письмо для подтверждения?
+                                        <a href="{% url 'resend_email' %}">Отправить повторно</a>
+                                    </small>
+                                </div>
                             </div>
                         </li>
                         <li>

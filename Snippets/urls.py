@@ -14,7 +14,7 @@ urlpatterns = [
     path('snippets/my', views.snippets_page, {"my_snippets": True}, name="snippets-my"),
     path('snippet/<int:id>/delete', views.snippet_delete, name="snippet-delete"),
     path('snippet/<int:id>/edit', views.snippet_edit, name="snippet-edit"),
-    path('login', views.login, name="login"),
+    path('login/', views.login, name="login"),
     path('logout', views.user_logout, name="logout"),
     path('registration', views.user_registration, name="registration"),
     path('comment/add', views.comment_add, name="comment-add"),
@@ -29,6 +29,10 @@ urlpatterns = [
     path('notifications/delete/', views.notifications_delete, name='delete_read_notifications'),
     path('notifications/delete/<int:id>/', views.notifications_delete, name='delete_notification'),
     path('notifications/mark_read/<int:id>/', views.user_notifications, name='mark_notification'),
+    path('activate/<int:user_id>/<str:token>/', views.activate_account, name='activate_account'),
+    path('resend_email/', views.resend_email, name='resend_email'),
+    path('delete-account/', views.delete_account_view, name='delete_account'),
+
     path('api/comment/like/', views.add_comment_like, name="comment-like"),
     path('api/snippet/like/', views.add_snippet_like, name="snippet-like"),
 

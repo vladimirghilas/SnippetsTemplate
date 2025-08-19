@@ -53,6 +53,10 @@ function poll() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Проверяем, авторизован ли пользователь
-            startPolling()
-    })
+    let notificationCounter = document.getElementById('notification-count');
+
+    // Dacă butonul există și are atributul data-polling="true", pornește polling-ul
+    if (notificationCounter && notificationCounter.dataset.polling === 'true') {
+        startPolling();
+    }
+});

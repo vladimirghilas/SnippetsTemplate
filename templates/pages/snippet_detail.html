@@ -11,7 +11,7 @@
             <div class="col">
                 <h1>{{ snippet.name }}</h1>
                 <p>Автор:
-                    <a href="{% url 'user_profile' snippet.user.username %}" class="btn btn-sm btn-primary">
+                    <a href="{% url 'user_profile' snippet.user.username %}?tab=info" class="btn btn-sm btn-primary">
                         {{ snippet.user.username }}
                     </a>
                 </p>
@@ -110,7 +110,7 @@
             <li>
                 <div>
                     <h5 class="mb-1">{{ comment.author.username }}</h5>
-                                        <a href="{% url 'user_profile' comment.author.username %}">
+                                        <a href="{% url 'user_profile' comment.author.username %}?tab=info">
                                             Профиль ({{ comment.author.username }})
                                         </a>
                     <small class="text-muted">{{ comment.creation_date | date:"j E Y г. в H:i" }}</small>
@@ -187,7 +187,7 @@
     {{ block.super }}
     <script src="{% static 'js/comment_count.js' %}"></script>
     <script src="{% static 'js/utils_copy.js' %}"></script>
-    <script src="{% static 'js/prism.js' %}"></script>
+{#    <script src="{% static 'js/prism.js' %}"></script>#}
     <script src="{% static 'js/like_dislike_comment.js' %}"></script>
     <script src="{% static 'js/like_dislike_snippet.js' %}"></script>
 {% endblock %}

@@ -3,6 +3,7 @@ from idlelib.autocomplete import FILES
 from operator import attrgetter
 
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404, HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
@@ -24,6 +25,10 @@ import json
 from datetime import datetime
 from itertools import chain
 from operator import attrgetter
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from .utils import send_activation_email, verify_activation_token
 
 logger = logging.getLogger(__name__)
 
@@ -201,17 +206,32 @@ def login(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
         user = auth.authenticate(request, username=username, password=password)
-        if user is not None:
-            auth.login(request, user)
-            return redirect('home')
-        else:
-            context = {
-                "errors": ["Incorrect username or password"],
-                "username": username
-            }
-            return render(request, 'pages/index.html', context)
 
+        if user:
+            if user.is_active:
+                auth.login(request, user)
+                return redirect('home')
+            else:
+                # Аккаунт существует, но не активен
+                try:
+                    user = User.objects.get(username=username)
+                    if not user.check_password(password):
+                        raise User.DoesNotExist
+                    context = {
+                        "errors": ["Ваш аккаунт не подтвержден. Проверьте email для подтверждения."],
+                        "username": username
+                    }
+                except User.DoesNotExist:
+                # Неверный логин или пароль
+                    context = {
+                        "errors": ["Неверные username или password"],
+                        "username": username
+                 }
 
+                return render(request, 'pages/index.html', context)
+
+    # GET-запрос, просто показываем форму
+    return render(request, 'pages/index.html')
 def user_logout(request):
     auth.logout(request)
     return redirect('home')
@@ -227,8 +247,11 @@ def user_registration(request):
     if request.method == "POST":
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            messages.success(request, f'User "{user.username}" registered successfully.')
+            user = form.save(commit=True)
+            send_activation_email(user, request)
+            messages.success(
+                request,
+                f'Пользователь "{user.username}" успешно зарегистрирован. Проверьте ваш email для подтверждения аккаунта.')
             return redirect('home')
         else:
             context = {
@@ -237,6 +260,33 @@ def user_registration(request):
             return render(request, 'pages/registration.html', context)
 
 
+def activate_account(request, user_id, token):
+    """
+    Подтверждение аккаунта пользователя по токену
+    """
+    try:
+        user = User.objects.get(id=user_id)
+
+        # Проверяем, не подтвержден ли уже аккаунт
+        if user.is_active:
+            messages.info(request, 'Ваш аккаунт уже подтвержден.')
+            return redirect('home')
+
+        # Проверяем токен
+        if verify_activation_token(user, token):
+            user.is_active = True
+            user.save()
+            messages.success(request,
+                             'Ваш аккаунт успешно подтвержден! Теперь вы можете войти в систему.')
+            return redirect('home')
+        else:
+            messages.error(request,
+                           'Недействительная ссылка для подтверждения. Возможно, она устарела.')
+            return redirect('home')
+
+    except User.DoesNotExist:
+        messages.error(request, 'Пользователь не найден.')
+        return redirect('home')
 # 302
 # 404
 @login_required()
@@ -330,6 +380,9 @@ def get_user_notification(user):
 
 @login_required
 def unread_notifications_count(request):
+    # if not request.user.is_authenticated:
+    #     return JsonResponse({'error': 'Unauthorized'}, status=401)
+
     # """
     # API endpoint для получения количества непрочитанных уведомлений
     # Использует long polling - отвечает только если есть непрочитанные уведомления
@@ -339,9 +392,7 @@ def unread_notifications_count(request):
     # Максимальное время ожидания (30 секунд)
     max_wait_time = 10
     check_interval = 1  # Проверяем каждую секунду
-
     last_count = int(request.GET.get('last_count', 0))
-
     start_time = time.time()
     unread_count = 0
 
@@ -584,7 +635,7 @@ def user_profile(request, username):
     )
     top_snippets = Snippet.objects.filter(user=profile_user).order_by("-views_count")[:5]
 
-    if tab == "notifications" and request.user.is_authenticated and request.user == profile_user:
+    if tab in ("notifications", "info") and request.user.is_authenticated and request.user == profile_user:
         notifications_context = get_user_notification(request.user)
     else:
         notifications_context = {"notifications": [], "unread_count": 0, "read_count": []}
@@ -628,4 +679,31 @@ def edit_profile(request):
 def my_profile(request):
     if not request.user.is_authenticated:
         return redirect('login')  # sau pagina de login
+    return redirect('user_profile', username=request.user.username)
+
+
+def resend_email(request):
+    if request.method == 'GET':
+        return render(request, 'pages/resend_email.html/')
+    elif request.method == 'POST':
+        email = request.POST.get('email')
+        # TODO:
+        user = User.objects.get(email=email)
+        try:
+            send_activation_email(user, request)
+            messages.success(request, f'Email для подтверждения аккаунта отправлен повторно. Проверьте ваш email.')
+        except:
+            messages.error(request, f'ask your administration')
+        return redirect('home')
+    else:
+        raise Http404
+
+@login_required
+def delete_account_view(request):
+    if request.method == 'POST':
+        user = request.user
+        user_logout(request)  # разлогиниваем пользователя
+        user.delete()  # удаляем аккаунт
+        messages.success(request, "Ваш аккаунт был успешно удалён.")
+        return redirect('home')  # перенаправление на главную страницу после удаления
     return redirect('user_profile', username=request.user.username)
