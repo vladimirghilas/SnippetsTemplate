@@ -3,7 +3,6 @@ from idlelib.autocomplete import FILES
 from operator import attrgetter
 
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404, HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
@@ -232,6 +231,7 @@ def login(request):
 
     # GET-запрос, просто показываем форму
     return render(request, 'pages/index.html')
+
 def user_logout(request):
     auth.logout(request)
     return redirect('home')
