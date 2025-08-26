@@ -1,13 +1,19 @@
+from django.db.models import Q
+from django.views.generic import ListView, UpdateView
+
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, FormView
 from django.contrib import messages, auth
-from MainApp.forms import SnippetForm, CommentForm
-from MainApp.models import Snippet, Tag, Notification
+from MainApp.forms import SnippetForm, CommentForm, UserRegistrationForm
+from MainApp.models import Snippet, Tag, Notification, LANG_CHOICES, Subscription
 from MainApp.signals import snippet_view
+from MainApp.utils import send_activation_email
 
 
 class AddSnippetView(LoginRequiredMixin, CreateView):
@@ -32,6 +38,7 @@ class SnippetDetailView(DetailView):
     model = Snippet
     template_name = "pages/snippet_detail.html"
     context_object_name = "snippet"
+    pk_url_kwarg = "snippet_id"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -45,7 +52,7 @@ class SnippetDetailView(DetailView):
         context["available_tags"] = available_tags
 
         # signal
-        snippet_view.send(sender=None, snippet=snippet)
+        # snippet_view.send(sender=None, snippet=snippet)
 
         # comments + pagination (OPTIMIZED)
         comments_qs = (
@@ -65,6 +72,12 @@ class SnippetDetailView(DetailView):
 
         # titlu
         context["pagename"] = f"Snippet: {snippet.name}"
+
+        user = self.request.user
+        if user.is_authenticated:
+            context["is_subscribed"] = snippet.subscriptions.filter(user=user).exists()
+        else:
+            context["is_subscribed"] = False
 
         return context
 
@@ -93,7 +106,161 @@ class UserNotificationsView(LoginRequiredMixin, View):
                 pass
 
         if snippet_id:
-            return redirect("snippet-detail", pk=snippet_id)
+            return redirect("snippet-detail", snippet_id=snippet_id)
 
         # fallback
         return redirect("home")
+
+
+class SnippetsListView(ListView):
+    """Отображение списка сниппетов с фильтрацией, поиском и сортировкой"""
+    model = Snippet
+    template_name = 'pages/view_snippets.html'
+    context_object_name = 'snippets'
+    paginate_by = 10
+
+    def get_queryset(self):
+        my_snippets = self.kwargs.get('my_snippets', False)
+
+        if my_snippets:
+            if not self.request.user.is_authenticated:
+                raise PermissionDenied
+            queryset = Snippet.objects.filter(user=self.request.user).prefetch_related('tags')
+        else:
+            if self.request.user.is_authenticated:  # auth: all public + self private
+                queryset = Snippet.objects.filter(
+                    Q(public=True) | Q(user=self.request.user)
+                ).select_related("user").prefetch_related('tags')
+            else:  # not auth: all public
+                queryset = Snippet.objects.filter(public=True).select_related("user").prefetch_related('tags')
+
+        # Поиск
+        search = self.request.GET.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(code__icontains=search)
+            )
+
+        # Фильтрация по языку
+        lang = self.request.GET.get("lang")
+        if lang:
+            queryset = queryset.filter(lang=lang)
+
+        # Фильтрация по пользователю
+        user_id = self.request.GET.get("user_id")
+        if user_id:
+            queryset = queryset.filter(user__id=user_id)
+
+        # Сортировка
+        sort = self.request.GET.get("sort")
+        if sort:
+            queryset = queryset.order_by(sort)
+
+        # by tag
+        tag_id = self.request.GET.get('tag_id')
+        if tag_id:
+            queryset= queryset.filter(tags__id=tag_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        my_snippets = self.kwargs.get('my_snippets', False)
+
+        if my_snippets:
+            context['pagename'] = 'Мои сниппеты'
+        else:
+            context['pagename'] = 'Просмотр сниппетов'
+
+        # Получаем пользователей со сниппетами
+        users = User.objects.filter(snippet__isnull=False).distinct()
+        available_tags = Tag.objects.all()
+        context.update({
+            'sort': self.request.GET.get("sort"),
+            'LANG_CHOICES': LANG_CHOICES,
+            'users': users,
+            'lang': self.request.GET.get("lang"),
+            'user_id': self.request.GET.get("user_id"),
+            'tag_id': self.request.GET.get('tag_id'),
+            'available_tags': available_tags,
+        })
+
+        return context
+
+class SnippetUpdateView(UpdateView):
+    model = Snippet
+    form_class = SnippetForm
+    template_name = "pages/add_snippet.html"
+    context_object_name = 'snippet'
+
+    def dispatch(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        if snippet.user != request.user:
+            messages.error(request, "У вас нет прав для редактирования этого сниппета.")
+            return redirect("snippets-list")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["pagename"] = "Редактировать Сниппет"
+        context["edit"] = True
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, f'Snippet "{self.object.name}" was updated successfully.')
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy("snippets-list")
+
+
+# class SnippetEditView(UpdateView):
+#     model = Snippet
+#     form_class = SnippetForm
+#     template_name = ""
+#     success_url = ""
+#     pk_url_kwarg = 'id'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context["pgename"]= ""
+#         context["edit"] = True
+#         context['id'] = self.kwargs.get('id')
+
+
+class UserRegistrationView(FormView):
+    template_name = "pages/Registration.html"
+    form_class = UserRegistrationForm
+    success_url = "home"
+
+    def form_valid(self, form):
+        user = form.save(commit=True)
+        send_activation_email(user, self.request)
+        messages.success(
+            self.request,
+            f'Пользователь "{user.username}" успешно зарегистрирован. Проверьте ваш email для подтверждения аккаунта.'
+        )
+
+        return super().form_valid(form)
+
+class AddTagToSnippetView(LoginRequiredMixin, View):
+    # pk_url_kwarg = "snippet_id"
+    def post(self, request, snippet_id):
+        snippet = get_object_or_404(Snippet, id=snippet_id)
+        # проверяем, что пользователь владелец сниппета
+        if snippet.user != request.user:
+            raise PermissionDenied
+
+        tag_id = request.POST.get("tag_id")
+        if tag_id:
+            tag = get_object_or_404(Tag, id=tag_id)
+            snippet.tags.add(tag)
+            messages.success(request, f'Тег "{tag.name}" добавлен к сниппету "{snippet.name}".')
+        else:
+            messages.error(request, "Не выбран тег для добавления.")
+
+        return redirect("snippet-detail", snippet_id=snippet.id)
+

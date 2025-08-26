@@ -7,7 +7,7 @@ from django.http import Http404, HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import is_valid_path
-from MainApp.models import Snippet, Comment, LANG_CHOICES, Tag, Notification, LikeDislike
+from MainApp.models import Snippet, Comment, LANG_CHOICES, Tag, Notification, LikeDislike, Subscription
 from MainApp.forms import SnippetForm, UserRegistrationForm, CommentForm, UserProfileForm, UserEditForm
 from django.db.models import F, Q, Count, Avg
 from MainApp.models import LANG_ICONS
@@ -221,16 +221,17 @@ def login(request):
                         "username": username
                     }
                 except User.DoesNotExist:
-                # Неверный логин или пароль
+                    # Неверный логин или пароль
                     context = {
                         "errors": ["Неверные username или password"],
                         "username": username
-                 }
+                    }
 
                 return render(request, 'pages/index.html', context)
 
     # GET-запрос, просто показываем форму
     return render(request, 'pages/index.html')
+
 
 def user_logout(request):
     auth.logout(request)
@@ -287,6 +288,8 @@ def activate_account(request, user_id, token):
     except User.DoesNotExist:
         messages.error(request, 'Пользователь не найден.')
         return redirect('home')
+
+
 # 302
 # 404
 @login_required()
@@ -367,6 +370,7 @@ def user_notifications(request, id=None):
         if snippet_id:
             return redirect('snippet-detail', snippet_id=snippet_id)
 
+
 def get_user_notification(user):
     unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
     # Получаем все уведомления для авторизованного пользователя, сортируем по дате создания
@@ -377,6 +381,7 @@ def get_user_notification(user):
         'unread_count': unread_count,
         'read_count': read_count,
     }
+
 
 @login_required
 def unread_notifications_count(request):
@@ -433,6 +438,7 @@ def notifications_delete(request, id=None):
         print(f"Deleted {deleted_count} read notifications")
 
     return redirect('user_profile', username=request.user.username)
+
 
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
@@ -501,7 +507,6 @@ def is_authenticated(request):
         return JsonResponse({'is_authenticated': False})
 
 
-
 @require_POST
 @login_required
 def add_comment_like(request):
@@ -518,15 +523,28 @@ def add_comment_like(request):
         object_id=comment_id,
         defaults={'vote': vote}
     )
-
+    send_notification = False
     if not created:
         if existing_vote.vote == vote:
-            # Dacă utilizatorul apasă din nou același vot, îl ștergem
             existing_vote.delete()
         else:
-            # Dacă votează diferit, actualizăm votul
             existing_vote.vote = vote
             existing_vote.save()
+            if vote == LikeDislike.LIKE:
+                send_notification = True
+    else:
+        if vote == LikeDislike.LIKE:
+            send_notification = True
+
+    if send_notification and comment.author != request.user:
+        Notification.objects.create(
+            recipient=comment.author,
+            notification_type='like',
+            title=f"{request.user.username} поставил лайк вашему комментарию",
+            comment=comment,
+            snippet=comment.snippet,
+            message=f"Пользователь {request.user.username} поставил лайк вашему комментарию к сниппету: {comment.snippet.name}"
+        )
 
     response_data = {
         "success": True,
@@ -535,6 +553,7 @@ def add_comment_like(request):
     }
 
     return JsonResponse(response_data)
+
 
 @require_POST
 @login_required
@@ -565,14 +584,13 @@ def add_snippet_like(request):
             if vote == LikeDislike.LIKE:
                 send_notification = True
     else:
-        # Dacă e creat nou și e LIKE
         if vote == LikeDislike.LIKE:
             send_notification = True
 
     if send_notification and snippet.user != request.user:
         Notification.objects.create(
-            recipient = snippet.user,
-            notification_type = ('like'),
+            recipient=snippet.user,
+            notification_type=('like'),
             title=f"{request.user.username} поставил лайк вашему сниппету",
             comment=None,
             snippet=snippet,
@@ -584,6 +602,7 @@ def add_snippet_like(request):
         'likes_count': snippet.likes_count(),
         'dislikes_count': snippet.dislikes_count(),
     })
+
 
 def user_profile(request, username):
     tab = request.GET.get("tab", "profile")
@@ -653,8 +672,8 @@ def user_profile(request, username):
 
     return render(request, "pages/user_profile.html", context)
 
-def edit_profile(request):
 
+def edit_profile(request):
     if request.method == 'POST':
         user_profile = UserProfileForm(request.POST, request.FILES, instance=request.user.profile)
         user_form = UserEditForm(request.POST, request.FILES, instance=request.user)
@@ -675,6 +694,7 @@ def edit_profile(request):
 
     # Возвращаем шаблон с формой для GET-запроса или если форма невалидна
     return render(request, 'pages/edit_profile.html', context)
+
 
 def my_profile(request):
     if not request.user.is_authenticated:
@@ -698,6 +718,7 @@ def resend_email(request):
     else:
         raise Http404
 
+
 @login_required
 def delete_account_view(request):
     if request.method == 'POST':
@@ -707,3 +728,31 @@ def delete_account_view(request):
         messages.success(request, "Ваш аккаунт был успешно удалён.")
         return redirect('home')  # перенаправление на главную страницу после удаления
     return redirect('user_profile', username=request.user.username)
+
+
+@login_required
+def toggle_subscription(request, snippet_id):
+    snippet = get_object_or_404(Snippet, id=snippet_id)
+    subscription = Subscription.objects.filter(user=request.user, snippet=snippet)
+
+    if subscription.exists():
+        subscription.delete()
+    else:
+        Subscription.objects.create(user=request.user, snippet=snippet)
+
+    return redirect('snippet-detail', snippet_id=snippet.id)
+
+
+@login_required
+def subscriptions_page(request):
+    # Сниппеты, на которые подписан текущий пользователь
+    my_subscriptions = Subscription.objects.filter(user=request.user).select_related("snippet", "snippet__user")
+
+    # Пользователи, подписавшиеся на ваши сниппеты
+    subscribers_to_my_snippets = Subscription.objects.filter(snippet__user=request.user).select_related("user", "snippet")
+    context = {
+        **get_user_notification(request.user),
+        "my_subscriptions": my_subscriptions,
+        "subscribers_to_my_snippets": subscribers_to_my_snippets,
+    }
+    return render(request, "pages/subscribe.html", context)

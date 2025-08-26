@@ -1,0 +1,13 @@
+# Python
+*.py text eol=lf
+
+# Templates
+*.html text eol=lf
+
+# JS & CSS
+*.js text eol=lf
+*.css text eol=lf
+
+# Text & config
+*.txt text eol=lf
+*.env text eol=l

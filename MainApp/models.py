@@ -21,6 +21,8 @@ LANG_ICONS = {
     "java": "fa-java",
 }
 
+User._meta.get_field('email')._unique = True
+
 
 class LikeDislike(models.Model):
     LIKE = 1
@@ -54,6 +56,11 @@ class Tag(models.Model):
 class Snippet(models.Model):
     class Meta:
         ordering = ['name', 'lang']
+        indexes = [
+            models.Index(fields=['name', 'lang']),
+            models.Index(fields=['lang', 'name']),
+            models.Index(fields=['user', 'name', 'lang']),
+        ]
 
     name = models.CharField(max_length=100)
     lang = models.CharField(max_length=30, choices=LANG_CHOICES)
@@ -100,6 +107,7 @@ class Notification(models.Model):
         ('comment', 'Новый комментарий'),
         ('like', 'Новый лайк'),
         ('follow', 'Новый подписчик'),
+        ('subscribe_comment', 'Коментарий к сниппету по подписке')
     ]
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
@@ -129,3 +137,15 @@ class UserProfile(models.Model):
         if self.avatar:
             return self.avatar.url
         return '/static/images/default-avatar.png'
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="subscriptions")
+    snippet = models.ForeignKey(Snippet, on_delete=models.CASCADE, related_name="subscriptions")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "snippet")
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} → {self.snippet.name}"

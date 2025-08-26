@@ -8,14 +8,32 @@
 {% block content %}
     <div class="container">
         <div class="row">
-            <div class="col">
-                <h1>{{ snippet.name }}</h1>
-                <p>Автор:
-                    <a href="{% url 'user_profile' snippet.user.username %}?tab=info" class="btn btn-sm btn-primary">
-                        {{ snippet.user.username }}
-                    </a>
-                </p>
+            <div class="snippet-header" style="display: flex; align-items: center; gap: 10px;">
 
+                {% if snippet.user != user %}
+                    <form method="post" action="{% url 'toggle_subscription' snippet.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        {% if user.is_authenticated %}
+                            {% if is_subscribed %}
+                                <button type="submit" class="btn btn-secondary btn-sm">Unsubscribe</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-danger btn-sm">Login to Subscribe</a>
+                        {% endif %}
+                    </form>
+                {% endif %}
+
+                <span>
+                    Автор:
+                    <a href="{% url 'user_profile' snippet.user.username %}?tab=info" class="btn btn-sm btn-primary">
+                         {{ snippet.user.username }}
+                     </a>
+                 </span>
+                <h1 style="margin: 0;">{{ snippet.name }}</h1>
+            </div>
+            <div class="col">
                 <!-- Acestea sunt doar afișări, deci rămân în fieldset -->
                 <fieldset disabled>
                     <div class="row mb-4">
@@ -75,7 +93,7 @@
         </div>
         <div class="row">
             <div class="col-md-8">
-                <form action="{% url 'comment-add' %}" method="POST"
+                <form id="commentForm" action="{% url 'comment-add' %}" method="POST"
                       class="p-1 border rounded shadow-sm"
                       style="max-width: 1000px; background-color:#e9ecef;">
                     {% csrf_token %}
@@ -110,9 +128,9 @@
             <li>
                 <div>
                     <h5 class="mb-1">{{ comment.author.username }}</h5>
-                                        <a href="{% url 'user_profile' comment.author.username %}?tab=info">
-                                            Профиль ({{ comment.author.username }})
-                                        </a>
+                    <a href="{% url 'user_profile' comment.author.username %}?tab=info">
+                        Профиль ({{ comment.author.username }})
+                    </a>
                     <small class="text-muted">{{ comment.creation_date | date:"j E Y г. в H:i" }}</small>
                 </div>
                 <p class="mb-1">
@@ -187,7 +205,7 @@
     {{ block.super }}
     <script src="{% static 'js/comment_count.js' %}"></script>
     <script src="{% static 'js/utils_copy.js' %}"></script>
-{#    <script src="{% static 'js/prism.js' %}"></script>#}
+    {#    <script src="{% static 'js/prism.js' %}"></script>#}
     <script src="{% static 'js/like_dislike_comment.js' %}"></script>
     <script src="{% static 'js/like_dislike_snippet.js' %}"></script>
 {% endblock %}
