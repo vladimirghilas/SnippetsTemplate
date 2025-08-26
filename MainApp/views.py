@@ -1,5 +1,4 @@
 import logging
-from idlelib.autocomplete import FILES
 from operator import attrgetter
 
 from django.contrib.contenttypes.models import ContentType
