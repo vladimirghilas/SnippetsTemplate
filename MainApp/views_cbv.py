@@ -232,7 +232,7 @@ class SnippetUpdateView(UpdateView):
 
 
 class UserRegistrationView(FormView):
-    template_name = "pages/Registration.html"
+    template_name = "pages/registration.html"
     form_class = UserRegistrationForm
     success_url = "home"
 

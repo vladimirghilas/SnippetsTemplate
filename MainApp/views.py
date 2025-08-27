@@ -318,7 +318,7 @@ def snippets_stats_view(request):
     context = {
         'total_snippets': total_snippets,
         'public_snippets': public_snippets,
-        'avg_views': round(average_view, 2),
+        'avg_views': round(average_view, 2) if average_view is not None else 0,
         'top_snippets': top_snippets,
         'top_users': top_users,
     }
