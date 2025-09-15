@@ -71,8 +71,9 @@ def snippets_page(request, my_snippets, num_snippets_on_page=5):
     if my_snippets:
         if not request.user.is_authenticated:
             raise PermissionDenied
-        pagename = "Мои сниппеты"
-        snippets = Snippet.objects.filter(user=request.user).prefetch_related('tags')
+        else:
+            pagename = "Мои сниппеты"
+            snippets = Snippet.objects.filter(user=request.user).select_related("user").prefetch_related('tags')
     else:
         pagename = 'Просмотр сниппетов'
         if request.user.is_authenticated:
@@ -544,11 +545,13 @@ def add_comment_like(request):
             snippet=comment.snippet,
             message=f"Пользователь {request.user.username} поставил лайк вашему комментарию к сниппету: {comment.snippet.name}"
         )
+    likes_count = comment.likes.filter(vote=LikeDislike.LIKE).count()
+    dislikes_count = comment.likes.filter(vote=LikeDislike.DISLIKE).count()
 
     response_data = {
         "success": True,
-        "likes_count": comment.likes_count(),
-        "dislikes_count": comment.dislikes_count(),
+        "likes_count": likes_count,
+        "dislikes_count": dislikes_count,
     }
 
     return JsonResponse(response_data)

@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.views.generic import ListView, UpdateView
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,8 +11,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, FormView
 from django.contrib import messages, auth
 from MainApp.forms import SnippetForm, CommentForm, UserRegistrationForm
-from MainApp.models import Snippet, Tag, Notification, LANG_CHOICES, Subscription
-from MainApp.signals import snippet_view
+from MainApp.models import Snippet, Tag, Notification, LANG_CHOICES, Comment
 from MainApp.utils import send_activation_email
 
 
@@ -40,6 +39,12 @@ class SnippetDetailView(DetailView):
     context_object_name = "snippet"
     pk_url_kwarg = "snippet_id"
 
+    def get_queryset(self):
+        return Snippet.objects.select_related('user').prefetch_related(  # Используем аннотации для комментариев
+            Prefetch('comments',
+                     queryset=Comment.with_likes_count().select_related('author')),
+            "tags")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -50,16 +55,8 @@ class SnippetDetailView(DetailView):
         snippet_tags = snippet.tags.all()
         available_tags = all_tags.exclude(id__in=snippet_tags.values_list("id", flat=True))
         context["available_tags"] = available_tags
-
-        # signal
-        # snippet_view.send(sender=None, snippet=snippet)
-
         # comments + pagination (OPTIMIZED)
-        comments_qs = (
-            snippet.comments
-            .select_related("snippet")     # optim pentru autorul comentariului
-            .order_by("-creation_date")    # cel mai nou primul
-        )
+        comments_qs = snippet.comments.all().order_by("-creation_date")
         paginator = Paginator(comments_qs, 2)
         page_number = self.request.GET.get("page")
         context["comments"] = paginator.get_page(page_number)
@@ -125,7 +122,7 @@ class SnippetsListView(ListView):
         if my_snippets:
             if not self.request.user.is_authenticated:
                 raise PermissionDenied
-            queryset = Snippet.objects.filter(user=self.request.user).prefetch_related('tags')
+            queryset = Snippet.objects.filter(user=self.request.user).select_related("user").prefetch_related('tags')
         else:
             if self.request.user.is_authenticated:  # auth: all public + self private
                 queryset = Snippet.objects.filter(

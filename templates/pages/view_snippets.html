@@ -148,7 +148,11 @@
                                 {% else %}
                                     <i class="fa-solid fa-lock"></i>
                                 {% endif %}
-                                {{ snippet.user|default:'Anonim'}}
+                                {% if my_snippets %}
+                                    {{ request.user.username }}
+                                {% else %}
+                                    {{ snippet.user.username|default:'Anonim' }}
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

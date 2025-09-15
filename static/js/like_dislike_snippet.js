@@ -11,10 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     "Content-Type": "application/json",
                     "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
                 },
-                body: JSON.stringify({
-                    snippet_id: snippetId,
-                    vote: vote
-                })
+                body: JSON.stringify({snippet_id: snippetId, vote: vote})
             })
             .then(response => response.json())
             .then(data => {

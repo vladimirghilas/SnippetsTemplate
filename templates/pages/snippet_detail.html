@@ -123,43 +123,46 @@
                 </form>
             </div>
         </div>
-        <tbody>
-        {% for comment in comments %}
-            <li>
-                <div>
-                    <h5 class="mb-1">{{ comment.author.username }}</h5>
-                    <a href="{% url 'user_profile' comment.author.username %}?tab=info">
-                        Профиль ({{ comment.author.username }})
-                    </a>
-                    <small class="text-muted">{{ comment.creation_date | date:"j E Y г. в H:i" }}</small>
+        <div id="comments-section" class="mt-4">
+            <h4>Комментарии</h4>
+
+            {% if comments %}
+                <div id="comments-container">
+                    {% for comment in comments %}
+                        <div class="comment mb-3 p-2 border rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div>
+                                    <h5 class="mb-1">{{ comment.author.username }}</h5>
+                                    <a href="{% url 'user_profile' comment.author.username %}?tab=info">
+                                        Профиль ({{ comment.author.username }})
+                                    </a>
+                                    <small class="text-muted">
+                                        {{ comment.creation_date | date:"j E Y г. в H:i" }}</small>
+                                </div>
+                            </div>
+                            <p class="mb-1">{{ comment.text }}</p>
+                            <div class="d-inline-flex align-items-center me-3">
+                                <button class="btn btn-sm btn-outline-success me-1 btn-like"
+                                        data-comment-id="{{ comment.id }}" title="Лайк">
+                                    <i class="fa-regular fa-thumbs-up"></i>
+                                </button>
+                                <span id="likes-{{ comment.id }}"
+                                      class="badge bg-success me-2">{{ comment.likes_count }}</span>
+
+                                <button class="btn btn-sm btn-outline-danger me-1 btn-dislike"
+                                        data-comment-id="{{ comment.id }}" title="Дизлайк">
+                                    <i class="fa-solid fa-thumbs-down"></i>
+                                </button>
+                                <span id="dislikes-{{ comment.id }}"
+                                      class="badge bg-danger">{{ comment.dislikes_count }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
-                <p class="mb-1">
-                    {{ comment.text }}
-                </p>
-                <small>
-                    <div class="d-inline-flex align-items-center me-3">
-                        <button class="btn btn-sm btn-outline-success me-1 btn-like"
-                                data-comment-id="{{ comment.id }}"
-                                title="Лайк">
-                            <i class="fa-regular fa-thumbs-up"></i>
-                        </button>
-                        <span id="likes-{{ comment.id }}" class="badge bg-success me-2">{{ comment.likes_count }}</span>
-
-                        <button class="btn btn-sm btn-outline-danger me-1 btn-dislike"
-                                data-comment-id="{{ comment.id }}"
-                                title="Дизлайк">
-                            <i class="fa-solid fa-thumbs-down"></i>
-                        </button>
-                        <span id="dislikes-{{ comment.id }}" class="badge bg-danger">{{ comment.dislikes_count }}</span>
-                    </div>
-                </small>
-            </li>
-            {% empty %}
-            <tr>
-                <td colspan="3" class="text-center fst-italic">Пока нет комментариев. Будьте первым!</td>
-            </tr>
-        {% endfor %}
-
+            {% else %}
+                <div class="text-center fst-italic">Пока нет комментариев. Будьте первым!</div>
+            {% endif %}
+        </div>
         {% if comments.has_other_pages %}
             <tr>
                 <td colspan="3" class="text-center">
@@ -197,7 +200,7 @@
                 </td>
             </tr>
         {% endif %}
-        </tbody>
+    </div>
     </div>
 
 {% endblock %}
